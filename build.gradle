@@ -1,0 +1,22 @@
+plugins {
+    id 'java'
+}
+
+group = 'com.e_complish'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.9.1')
+    implementation platform('com.amazonaws:aws-java-sdk-bom:1.12.529')
+    implementation 'com.amazonaws:aws-java-sdk-iam'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+test {
+    useJUnitPlatform()
+}
