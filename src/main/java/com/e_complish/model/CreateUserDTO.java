@@ -1,12 +1,14 @@
 package com.e_complish.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-@Getter
 @Data
-@AllArgsConstructor
+@NoArgsConstructor
 public class CreateUserDTO {
-    private final String username;
+    private String username;
+
+    public String getUsername() {
+        return username;
+    }
 }
