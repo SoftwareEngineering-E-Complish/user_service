@@ -148,7 +148,6 @@ public class UserController {
                 .userPoolId(USER_POOL_ID)
                 .username(confirmUserDTO.getUsername()).build();
 
-        // Confirm the sign up
         AdminConfirmSignUpResponse confirmSignUpResponse = cognitoClient.adminConfirmSignUp(adminConfirmSignUpRequest);
 
     }
