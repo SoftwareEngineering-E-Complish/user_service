@@ -1,24 +1,26 @@
 package com.ecomplish.user_service.controller;
 
+import com.ecomplish.user_service.model.ConfirmUserDTO;
 import com.ecomplish.user_service.model.CreateUserDTO;
+import com.ecomplish.user_service.model.LoginUserDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
-import software.amazon.awssdk.auth.credentials.CredentialUtils;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
-import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
-import software.amazon.awssdk.auth.credentials.internal.SystemSettingsCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
-import software.amazon.awssdk.utils.SystemSetting;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+import java.security.SignatureException;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +31,9 @@ public class UserController {
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
     private final String USER_POOL_ID = "eu-central-1_zAZldVUOu";
+    private final String CLIENT_ID = "bu1ij0ksgtt6ou22062o11kal";
+    private final String CLIENT_SECRET = "avuja33km2484l79alrccf07bnflteog9tv539ntltjdc4mlpn3";
+
 
     private final CognitoIdentityProviderClient cognitoClient;
 
@@ -54,6 +59,7 @@ public class UserController {
     // Endpoint for creating users in IAM
     @PostMapping("/createUser")
     public ResponseEntity createUser(@RequestBody CreateUserDTO createUserDTO) {
+        ResponseEntity res;
         try {
             Map<String, String> userAttributes = new HashMap<>();
             userAttributes.put("email", createUserDTO.getEmail());
@@ -68,22 +74,95 @@ public class UserController {
                             .build())
                     .collect(Collectors.toList());
 
-            AdminCreateUserRequest userRequest = AdminCreateUserRequest.builder()
-                    .userPoolId(USER_POOL_ID)
-                    .username(createUserDTO.getUsername())
-                    .temporaryPassword(createUserDTO.getPassword())
+            SignUpRequest signUpRequest = SignUpRequest.builder()
                     .userAttributes(userAttrs)
-                    .messageAction("SUPPRESS")
+                    .username(createUserDTO.getUsername())
+                    .clientId(CLIENT_ID)
+                    .secretHash(this.calculateSecretHash(createUserDTO.getUsername()))
+                    .password(createUserDTO.getPassword())
                     .build();
 
-            AdminCreateUserResponse response = cognitoClient.adminCreateUser(userRequest);
+            SignUpResponse response = this.cognitoClient.signUp(signUpRequest);
 
-            logger.info(response.user().username());
-            return ResponseEntity.status(HttpStatus.CREATED).build();
+            res = ResponseEntity.status(HttpStatus.OK).build();
+
+            this.confirmUserLocal(new ConfirmUserDTO(createUserDTO.getUsername()));
         }
         catch (Exception e){
             logger.error(e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            res = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
+        return res;
+    }
+
+    @PostMapping("/confirmUser")
+    public ResponseEntity confirmUser(@RequestBody ConfirmUserDTO confirmUserDTO) {
+        ResponseEntity res;
+        try {
+            this.confirmUserLocal(confirmUserDTO);
+
+            res = ResponseEntity.status(HttpStatus.OK).build();
+        }catch (Exception e){
+            logger.info(e.getMessage());
+            res = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
+        return res;
+    }
+
+    @PostMapping("/loginUser")
+    public ResponseEntity loginUser(@RequestBody LoginUserDTO loginUserDTO) {
+        ResponseEntity res;
+        try {
+            logger.info(loginUserDTO.getUsername());
+            Map<String, String> authParameters = new HashMap<>();
+            authParameters.put("USERNAME", loginUserDTO.getUsername());
+            authParameters.put("PASSWORD", loginUserDTO.getPassword());
+            authParameters.put("SECRET_HASH", this.calculateSecretHash(loginUserDTO.getUsername()));
+
+            AdminInitiateAuthRequest authRequest = AdminInitiateAuthRequest.builder()
+                    .userPoolId(USER_POOL_ID)
+                    .clientId(CLIENT_ID)
+                    .authParameters(authParameters)
+                    .authFlow(AuthFlowType.ADMIN_USER_PASSWORD_AUTH)
+                    .build();
+
+            AdminInitiateAuthResponse response = this.cognitoClient.adminInitiateAuth(authRequest);
+            res = ResponseEntity.status(HttpStatus.OK).build();
+        } catch (CognitoIdentityProviderException e) {
+            logger.info(e.awsErrorDetails().errorMessage());
+            res = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } catch (Exception e){
+            logger.info(e.getMessage());
+            res = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
+        return res;
+    }
+
+    private void confirmUserLocal(ConfirmUserDTO confirmUserDTO) {
+        logger.info(confirmUserDTO.getUsername());
+
+        AdminConfirmSignUpRequest adminConfirmSignUpRequest = AdminConfirmSignUpRequest.builder()
+                .userPoolId(USER_POOL_ID)
+                .username(confirmUserDTO.getUsername()).build();
+
+        // Confirm the sign up
+        AdminConfirmSignUpResponse confirmSignUpResponse = cognitoClient.adminConfirmSignUp(adminConfirmSignUpRequest);
+
+    }
+
+    private String calculateSecretHash(String username) throws SignatureException {
+        try {
+            SecretKeySpec signingKey = new SecretKeySpec(CLIENT_SECRET.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+            Mac mac = Mac.getInstance("HmacSHA256");
+            mac.init(signingKey);
+            mac.update(username.getBytes(StandardCharsets.UTF_8));
+            byte[] rawHmac = mac.doFinal(CLIENT_ID.getBytes(StandardCharsets.UTF_8));
+            return Base64.getEncoder().encodeToString(rawHmac);
+        } catch (Exception e) {
+            throw new SignatureException("Failed to generate secret hash: " + e.getMessage());
         }
     }
 }

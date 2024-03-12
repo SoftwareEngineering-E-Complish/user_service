@@ -1,8 +1,6 @@
 package com.ecomplish.user_service.model;
 
 import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Data
 public class CreateUserDTO {

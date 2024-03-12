@@ -25,7 +25,7 @@ public class UserControllerTest {
     @Test
     public void testCreateUser() throws Exception {
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("username", "testUser4");
+        jsonObject.put("username", "testUser10");
         jsonObject.put("name", "testName");
         jsonObject.put("familyName", "testFamilyName");
         jsonObject.put("email", "test@example.com");
@@ -34,6 +34,29 @@ public class UserControllerTest {
         mockMvc.perform(post("/createUser")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonObject.toString()))
-                .andExpect(status().isCreated());
+                .andExpect(status().isOk());
     }
+
+    @Test
+    public void testLoginUser() throws Exception {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("username", "testUser10");
+        jsonObject.put("password", "Test@123");
+
+        mockMvc.perform(post("/loginUser")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonObject.toString()))
+                .andExpect(status().isOk());
+    }
+
+//    @Test
+//    public void testConfirmUser() throws Exception {
+//        JSONObject jsonObject = new JSONObject();
+//        jsonObject.put("username", "testUser5");
+//
+//        mockMvc.perform(post("/confirmUser")
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(jsonObject.toString()))
+//                .andExpect(status().isOk());
+//    }
 }
