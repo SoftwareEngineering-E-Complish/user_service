@@ -25,9 +25,7 @@ public class UserControllerTest {
     @Test
     public void testCreateUser() throws Exception {
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("username", "testUser10");
-        jsonObject.put("name", "testName");
-        jsonObject.put("familyName", "testFamilyName");
+        jsonObject.put("username", "testUser0");
         jsonObject.put("email", "test@example.com");
         jsonObject.put("password", "Test@123");
 
@@ -48,6 +46,8 @@ public class UserControllerTest {
                         .content(jsonObject.toString()))
                 .andExpect(status().isOk());
     }
+
+
 
 //    @Test
 //    public void testConfirmUser() throws Exception {

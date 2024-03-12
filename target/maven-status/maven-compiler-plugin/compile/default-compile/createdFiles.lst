@@ -1,3 +1,5 @@
 com/ecomplish/user_service/controller/UserController.class
+com/ecomplish/user_service/model/ConfirmUserDTO.class
 com/ecomplish/user_service/model/CreateUserDTO.class
+com/ecomplish/user_service/model/LoginUserDTO.class
 com/ecomplish/user_service/UserServiceApplication.class

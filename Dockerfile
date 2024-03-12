@@ -1,30 +1,26 @@
-# Start with a base image containing Java runtime and Gradle
-FROM gradle:7.2.0-jdk11 as build
+# Use a base image with JDK 17 and Maven pre-installed
+FROM maven:3.9.6-openjdk-17 AS build
 
 # Set the working directory in the container
 WORKDIR /app
 
-# Copy all gradle files
-COPY build.gradle settings.gradle gradlew ./
-COPY gradle ./gradle
+# Copy the Maven project
+COPY . .
 
-# Copy the source code
-COPY src src
+# Package the application
+RUN mvn clean package -DskipTests
 
-# Build the application
-RUN ./gradlew build --no-daemon
-
-# Start with a base image containing Java runtime
-FROM openjdk:11-jdk-slim
+# Create a new image with JRE only
+FROM openjdk:17-jre-slim
 
 # Set the working directory in the container
 WORKDIR /app
 
-# Copy the jar file from the build stage
-COPY --from=build /app/build/libs/*.jar app.jar
+# Copy the packaged jar file from the build stage to the new image
+COPY --from=build /app/target/your-application.jar .
 
-# Make port 8080 available to the world outside this container
+# Expose the port the application runs on
 EXPOSE 8080
 
-# Run the jar file
-ENTRYPOINT ["java","-jar","app.jar"]
+# Define the command to run the application when the container starts
+CMD ["java", "-jar", "your-application.jar"]

@@ -5,16 +5,16 @@ import lombok.Data;
 @Data
 public class CreateUserDTO {
     private String username;
-    private String name;
-    private String familyName;
     private String email;
     private String password;
+    private String name;
+    private String phoneNumber;
 
-    public CreateUserDTO(String username, String name, String familyName, String email, String password) {
+    public CreateUserDTO(String username, String email, String password,  String name, String phoneNumber) {
         this.username = username;
-        this.name = name;
-        this.familyName = familyName;
         this.email = email;
         this.password = password;
+        this.name = name;
+        this.phoneNumber = phoneNumber;
     }
 }

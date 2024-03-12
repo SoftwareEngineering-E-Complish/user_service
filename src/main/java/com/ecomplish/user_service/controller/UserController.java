@@ -30,17 +30,17 @@ import java.util.stream.Collectors;
 public class UserController {
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
-    private final String USER_POOL_ID = "eu-central-1_zAZldVUOu";
-    private final String CLIENT_ID = "bu1ij0ksgtt6ou22062o11kal";
-    private final String CLIENT_SECRET = "avuja33km2484l79alrccf07bnflteog9tv539ntltjdc4mlpn3";
+    private final String USER_POOL_ID = "eu-central-1_tHxxikvel";
+    private final String CLIENT_ID = "2tcalk7bl60t5vass9smgu2l3q";
+    private final String CLIENT_SECRET = "734hqbj2giqisj52t42f7pd1thija95bfgkik6i4e62g41v29mf";
 
 
     private final CognitoIdentityProviderClient cognitoClient;
 
     public UserController() {
-        String accessKey = System.getenv("AWS_ACCESS_KEY");
-        String secretKey = System.getenv("AWS_SECRET_KEY");
-        String regionString = System.getenv("AWS_REGION");
+        String accessKey = System.getenv("AWS_ACCESS_KEY_ID");
+        String secretKey = System.getenv("AWS_SECRET_ACCESS_KEY");
+        String regionString = System.getenv("AWS_DEFAULT_REGION");
         Region region;
         if(regionString != null){
             region = Region.of(regionString);
@@ -64,7 +64,7 @@ public class UserController {
             Map<String, String> userAttributes = new HashMap<>();
             userAttributes.put("email", createUserDTO.getEmail());
             userAttributes.put("name", createUserDTO.getName());
-            userAttributes.put("family_name", createUserDTO.getFamilyName());
+            userAttributes.put("phone_number", createUserDTO.getPhoneNumber());
 
             // Convert the map to a list of AttributeType
             List<AttributeType> userAttrs = userAttributes.entrySet().stream()
@@ -129,6 +129,51 @@ public class UserController {
                     .build();
 
             AdminInitiateAuthResponse response = this.cognitoClient.adminInitiateAuth(authRequest);
+            res = ResponseEntity.status(HttpStatus.OK).build();
+        } catch (CognitoIdentityProviderException e) {
+            logger.info(e.awsErrorDetails().errorMessage());
+            res = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } catch (Exception e){
+            logger.info(e.getMessage());
+            res = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
+        return res;
+    }
+
+    @PostMapping("/logoutUser")
+    public ResponseEntity logoutUser(@RequestBody ConfirmUserDTO confirmUserDTO) {
+        ResponseEntity res;
+        try {
+            AdminUserGlobalSignOutRequest signOutRequest = AdminUserGlobalSignOutRequest.builder()
+                    .userPoolId(USER_POOL_ID)
+                    .username(confirmUserDTO.getUsername())
+                    .build();
+
+            AdminUserGlobalSignOutResponse response = this.cognitoClient.adminUserGlobalSignOut(signOutRequest);
+            res = ResponseEntity.status(HttpStatus.OK).build();
+        } catch (CognitoIdentityProviderException e) {
+            logger.info(e.awsErrorDetails().errorMessage());
+            res = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } catch (Exception e){
+            logger.info(e.getMessage());
+            res = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
+        return res;
+    }
+
+    @PostMapping("/updateUser")
+    public ResponseEntity updateUser(@RequestBody CreateUserDTO createUserDTO) {
+        ResponseEntity res;
+        try {
+            AdminUpdateUserAttributesRequest updateUserAttributesRequest = AdminUpdateUserAttributesRequest.builder()
+                    .userPoolId(USER_POOL_ID)
+                    .username(createUserDTO.getUsername())
+                    .userAttributes(AttributeType.builder().name("email").value(createUserDTO.getEmail()).build())
+                    .build();
+
+            AdminUpdateUserAttributesResponse response = this.cognitoClient.adminUpdateUserAttributes(updateUserAttributesRequest);
             res = ResponseEntity.status(HttpStatus.OK).build();
         } catch (CognitoIdentityProviderException e) {
             logger.info(e.awsErrorDetails().errorMessage());
