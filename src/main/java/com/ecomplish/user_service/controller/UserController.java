@@ -8,10 +8,7 @@ import com.ecomplish.user_service.model._enum.AuthType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
@@ -141,6 +138,25 @@ public class UserController {
             this.cognitoClient.changePassword(changePasswordRequest);
 
             return ResponseEntity.ok().build();
+        } catch (CognitoIdentityProviderException e) {
+            logger.info(e.awsErrorDetails().errorMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } catch (Exception e){
+            logger.info(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/userId")
+    public ResponseEntity<String> userId(@RequestParam String accessToken) {
+        try {
+            GetUserRequest getUserRequest = GetUserRequest.builder()
+                    .accessToken(accessToken)
+                    .build();
+
+            GetUserResponse getUserResponse = this.cognitoClient.getUser(getUserRequest);
+
+            return ResponseEntity.ok(getUserResponse.username());
         } catch (CognitoIdentityProviderException e) {
             logger.info(e.awsErrorDetails().errorMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

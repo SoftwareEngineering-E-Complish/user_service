@@ -97,4 +97,37 @@ public class UserControllerIntegrationTest {
                         .content(jsonObject.toString()))
                 .andExpect(status().isOk());
     }
+
+        @Test
+        public void testGetAccessToken() throws Exception {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("username", "testuser1");
+                jsonObject.put("password", "Test@123");
+
+                mockMvc.perform(post("/getAccessToken")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(jsonObject.toString()))
+                        .andExpect(status().isOk());
+        }
+
+        @Test
+        public void testUserId() throws Exception {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("username", "testuser1");
+                jsonObject.put("password", "Test@123");
+
+                MvcResult accessTokenResult = mockMvc.perform(post("/getAccessToken")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(jsonObject.toString()))
+                        .andExpect(status().isOk()).andReturn();
+
+                String accessToken = accessTokenResult.getResponse().getContentAsString();
+
+                jsonObject = new JSONObject();
+                jsonObject.put("username", "testuser1");
+
+                mockMvc.perform(get("/userId")
+                                .param("accessToken", accessToken))
+                        .andExpect(status().isOk());
+        }
 }
