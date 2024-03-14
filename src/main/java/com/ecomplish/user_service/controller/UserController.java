@@ -1,8 +1,11 @@
 package com.ecomplish.user_service.controller;
 
+import com.ecomplish.user_service.model.AccessTokenDTO;
 import com.ecomplish.user_service.model.ConfirmUserDTO;
+import com.ecomplish.user_service.model.UpdatePasswordDTO;
 import com.ecomplish.user_service.model.UpdateUserDTO;
 import com.ecomplish.user_service.model._enum.AuthType;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
@@ -32,21 +36,18 @@ import java.util.stream.Collectors;
 public class UserController {
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
-    private final String USER_POOL_ID;
-    private final String CLIENT_ID;
-    private final String CLIENT_SECRET;
-    private final String HOSTED_UI_BASE_URL;
+    @Value("${USER_POOL_ID}")
+    private String USER_POOL_ID;
+    @Value("${CLIENT_ID}")
+    private String CLIENT_ID;
+    @Value("${HOSTED_UI_BASE_URL}")
+    private String HOSTED_UI_BASE_URL;
 
 
     private final CognitoIdentityProviderClient cognitoClient;
 
     public UserController() {
-        this.USER_POOL_ID = System.getenv("USER_POOL_ID");
-        this.CLIENT_ID = System.getenv("CLIENT_ID");
-        this.CLIENT_SECRET = System.getenv("CLIENT_SECRET");
-        this.HOSTED_UI_BASE_URL = System.getenv("HOSTED_UI_BASE_URL");
-
-        AwsCredentialsProvider credentialsProvider = EnvironmentVariableCredentialsProvider.create();
+        AwsCredentialsProvider credentialsProvider = DefaultCredentialsProvider.create();
 
         this.cognitoClient = CognitoIdentityProviderClient.builder()
                 .credentialsProvider(credentialsProvider)
@@ -128,19 +129,63 @@ public class UserController {
         }
     }
 
+    @PostMapping("/changePassword")
+    public ResponseEntity<String> changePassword(@RequestBody UpdatePasswordDTO updatePasswordDTO) {
+        try {
+            ChangePasswordRequest changePasswordRequest = ChangePasswordRequest.builder()
+                    .accessToken(updatePasswordDTO.getAccessToken())
+                    .previousPassword(updatePasswordDTO.getOldPassword())
+                    .proposedPassword(updatePasswordDTO.getNewPassword())
+                    .build();
+
+            this.cognitoClient.changePassword(changePasswordRequest);
+
+            return ResponseEntity.ok().build();
+        } catch (CognitoIdentityProviderException e) {
+            logger.info(e.awsErrorDetails().errorMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } catch (Exception e){
+            logger.info(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     @PostMapping("/confirmUser")
     public ResponseEntity<String> confirmUser(@RequestBody ConfirmUserDTO confirmUserDTO) {
         try {
             this.confirmUserLocal(confirmUserDTO);
 
             return ResponseEntity.ok().build();
-        }catch (Exception e){
+        } catch (Exception e){
             logger.info(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    private void confirmUserLocal(ConfirmUserDTO confirmUserDTO) {
+    @PostMapping("/getAccessToken")
+    public ResponseEntity<String> getAccessToken(@RequestBody AccessTokenDTO accessTokenDTO) {
+        try {
+            Map<String, String> authParams = new HashMap<>();
+            authParams.put("USERNAME", accessTokenDTO.getUsername());
+            authParams.put("PASSWORD", accessTokenDTO.getPassword());
+
+            AdminInitiateAuthRequest authRequest = AdminInitiateAuthRequest.builder()
+                    .userPoolId(USER_POOL_ID)
+                    .clientId(CLIENT_ID)
+                    .authFlow(AuthFlowType.ADMIN_NO_SRP_AUTH)
+                    .authParameters(authParams)
+                    .build();
+
+            AdminInitiateAuthResponse authResponse = this.cognitoClient.adminInitiateAuth(authRequest);
+
+            return ResponseEntity.ok(authResponse.authenticationResult().accessToken());
+        } catch (Exception e){
+            logger.info(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    void confirmUserLocal(ConfirmUserDTO confirmUserDTO) {
         logger.info(confirmUserDTO.getUsername());
 
         AdminConfirmSignUpRequest adminConfirmSignUpRequest = AdminConfirmSignUpRequest.builder()
@@ -150,30 +195,46 @@ public class UserController {
         cognitoClient.adminConfirmSignUp(adminConfirmSignUpRequest);
     }
 
-    private String calculateSecretHash(String username) throws SignatureException {
-        try {
-            SecretKeySpec signingKey = new SecretKeySpec(CLIENT_SECRET.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
-            Mac mac = Mac.getInstance("HmacSHA256");
-            mac.init(signingKey);
-            mac.update(username.getBytes(StandardCharsets.UTF_8));
-            byte[] rawHmac = mac.doFinal(CLIENT_ID.getBytes(StandardCharsets.UTF_8));
-            return Base64.getEncoder().encodeToString(rawHmac);
-        } catch (Exception e) {
-            throw new SignatureException("Failed to generate secret hash: " + e.getMessage());
+    private Map<String, String> getURIParams(AuthType authType) {
+        DescribeUserPoolClientRequest request = DescribeUserPoolClientRequest.builder()
+                .userPoolId(USER_POOL_ID)
+                .clientId(CLIENT_ID)
+                .build();
+
+        DescribeUserPoolClientResponse response = this.cognitoClient.describeUserPoolClient(request);
+
+        Map<String, String> uris = new HashMap<>();
+        if(authType == AuthType.LOGOUT && response.userPoolClient().hasLogoutURLs()) {
+            uris.put("logout_uri", response.userPoolClient().logoutURLs().get(0));
         }
+        uris.put("redirect_uri", response.userPoolClient().callbackURLs().get(0));
+        return uris;
     }
 
     private String buildHostedUIURL(AuthType authType) throws URISyntaxException {
-        String baseUrl = HOSTED_UI_BASE_URL + "/" + authType.toPath();
+        if(HOSTED_UI_BASE_URL == null || CLIENT_ID == null) {
+            throw new URISyntaxException("HOSTED_UI_BASE_URL or CLIENT_ID", "Missing environment variables");
+        }
+
+        String domain = this.getDomain();
+        Map<String, String> uris = this.getURIParams(authType);
+
+        String baseUrl = HOSTED_UI_BASE_URL.replace("<DOMAIN>", domain) + "/" + authType.toPath();
 
         Map<String, String> params = new HashMap<>();
         params.put("client_id", CLIENT_ID);
         params.put("response_type", "code");
         params.put("scope", "email+openid+phone");
-        params.put("redirect_uri", "http://localhost");
+        params.putAll(uris);
 
         URI uri = getURI(baseUrl, params);
         return uri.toString();
+    }
+
+    private String getDomain() {
+        DescribeUserPoolRequest describeUserPoolRequest = DescribeUserPoolRequest.builder().userPoolId(USER_POOL_ID).build();
+        UserPoolType res = this.cognitoClient.describeUserPool(describeUserPoolRequest).userPool();
+        return res.domain();
     }
 
     private static URI getURI(String baseUrl, Map<String, String> params) throws URISyntaxException {

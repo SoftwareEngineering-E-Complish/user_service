@@ -5,11 +5,13 @@ FROM maven:3.6.3-openjdk-11 AS build
 WORKDIR /app
 
 # Copy the Maven project
-COPY . .
+COPY ./src/main ./src/main
+COPY ./mvnw ./mvnw
+COPY ./pom.xml ./pom.xml
 
 # Package the application using parallel builds and go offline
 #RUN mvn -T 1C clean package -DskipTests
-RUN --mount=type=cache,target=/root/.m2,rw mvn clean package -DskipTests
+RUN --mount=type=cache,target=/root/.m2,rw mvn clean install -DskipTests
 
 # Create a new image with JRE only
 FROM openjdk:11-jdk-slim

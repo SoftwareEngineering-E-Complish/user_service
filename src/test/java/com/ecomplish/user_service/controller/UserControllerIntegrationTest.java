@@ -7,8 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -16,7 +18,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class UserControllerTest {
+@TestPropertySource(properties = {
+        "CLIENT_ID=53mpp04dd8k69oj9gprorn0vic",
+        "USER_POOL_ID=eu-central-1_tHxxikvel",
+        "HOSTED_UI_BASE_URL=https://<DOMAIN>.auth.eu-central-1.amazoncognito.com"
+})
+public class UserControllerIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -43,38 +50,49 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testCreateUser() throws Exception {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("username", "testUser0");
-        jsonObject.put("email", "test@example.com");
-        jsonObject.put("password", "Test@123");
-
-        mockMvc.perform(post("/createUser")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonObject.toString()))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    public void testLoginUser() throws Exception {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("username", "testUser10");
-        jsonObject.put("password", "Test@123");
-
-        mockMvc.perform(post("/loginUser")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonObject.toString()))
-                .andExpect(status().isOk());
-    }
-
-
-
-    @Test
     public void testConfirmUser() throws Exception {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("username", "testuser1");
 
         mockMvc.perform(post("/confirmUser")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonObject.toString()))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void testUpdateUser() throws Exception {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("username", "testuser1");
+        jsonObject.put("name", "Test tttt");
+        jsonObject.put("phoneNumber", "+22922233");
+        jsonObject.put("email", "aabbba@example.com");
+
+        mockMvc.perform(post("/updateUser")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonObject.toString()))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void testChangePassword() throws Exception {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("username", "testuser1");
+        jsonObject.put("password", "Test@12345");
+
+        MvcResult accessTokenResult = mockMvc.perform(post("/getAccessToken")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonObject.toString()))
+                .andExpect(status().isOk()).andReturn();
+
+        String accessToken = accessTokenResult.getResponse().getContentAsString();
+
+        jsonObject = new JSONObject();
+        jsonObject.put("accessToken", accessToken);
+        jsonObject.put("oldPassword", "Test@12345");
+        jsonObject.put("newPassword", "Test@123");
+
+        mockMvc.perform(post("/changePassword")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonObject.toString()))
                 .andExpect(status().isOk());

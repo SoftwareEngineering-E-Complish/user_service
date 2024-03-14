@@ -1,0 +1,5 @@
+com\ecomplish\user_service\model\UpdateUserDTO.class
+com\ecomplish\user_service\controller\UserController.class
+com\ecomplish\user_service\model\ConfirmUserDTO.class
+com\ecomplish\user_service\UserServiceApplication.class
+com\ecomplish\user_service\model\_enum\AuthType.class
