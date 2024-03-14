@@ -16,9 +16,6 @@ RUN --mount=type=cache,target=/root/.m2,rw mvn clean install -DskipTests
 # Create a new image with JRE only
 FROM openjdk:11-jdk-slim
 
-# Set the working directory in the container
-WORKDIR /app
-
 # Copy the packaged jar file from the build stage to the new image
 COPY --from=build /app/target/*.jar app.jar
 
