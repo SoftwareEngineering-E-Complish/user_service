@@ -1,4 +1,4 @@
-package com.ecomplish.user_service.model;
+package com.ecomplish.user_service.model.DTO;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -6,8 +6,4 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ConfirmUserDTO {
     private String username;
-
-    public ConfirmUserDTO(String username) {
-        this.username = username;
-    }
 }

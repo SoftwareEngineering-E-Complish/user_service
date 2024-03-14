@@ -1,10 +1,12 @@
 package com.ecomplish.user_service.controller;
 
-import com.ecomplish.user_service.model.AccessTokenDTO;
-import com.ecomplish.user_service.model.ConfirmUserDTO;
-import com.ecomplish.user_service.model.UpdatePasswordDTO;
-import com.ecomplish.user_service.model.UpdateUserDTO;
+import com.ecomplish.user_service.model.DTO.AccessTokenDTO;
+import com.ecomplish.user_service.model.DTO.ConfirmUserDTO;
+import com.ecomplish.user_service.model.DTO.UpdatePasswordDTO;
+import com.ecomplish.user_service.model.DTO.UpdateUserDTO;
+import com.ecomplish.user_service.model.UserResponseDTO;
 import com.ecomplish.user_service.model._enum.AuthType;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,17 +15,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
-import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.security.SignatureException;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -101,7 +97,6 @@ public class UserController {
             userAttributes.put("name", updateUserDTO.getName());
             userAttributes.put("phone_number", updateUserDTO.getPhoneNumber());
 
-            // Convert the map to a list of AttributeType
             List<AttributeType> userAttrs = userAttributes.entrySet().stream()
                     .map(entry -> AttributeType.builder()
                             .name(entry.getKey())
@@ -138,6 +133,47 @@ public class UserController {
             this.cognitoClient.changePassword(changePasswordRequest);
 
             return ResponseEntity.ok().build();
+        } catch (CognitoIdentityProviderException e) {
+            logger.info(e.awsErrorDetails().errorMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } catch (Exception e){
+            logger.info(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/verifyAccessToken")
+    public ResponseEntity<Boolean> verifyAccessToken(@RequestParam String accessToken) {
+        try {
+            AdminGetUserRequest adminGetUserRequest = AdminGetUserRequest.builder()
+                    .userPoolId(USER_POOL_ID)
+                    .username(accessToken)
+                    .build();
+
+            this.cognitoClient.adminGetUser(adminGetUserRequest);
+
+            return ResponseEntity.ok(true);
+        } catch (CognitoIdentityProviderException e) {
+            logger.info(e.awsErrorDetails().errorMessage());
+            return ResponseEntity.ok(false);
+        } catch (Exception e){
+            logger.info(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/user")
+    public ResponseEntity<UserResponseDTO> user(@RequestParam String accessToken) {
+        try {
+            GetUserRequest getUserRequest = GetUserRequest.builder()
+                    .accessToken(accessToken)
+                    .build();
+
+            GetUserResponse getUserResponse = this.cognitoClient.getUser(getUserRequest);
+
+            UserResponseDTO user = getUserResponseDTO(getUserResponse);
+
+            return ResponseEntity.ok(user);
         } catch (CognitoIdentityProviderException e) {
             logger.info(e.awsErrorDetails().errorMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -201,14 +237,42 @@ public class UserController {
         }
     }
 
-    void confirmUserLocal(ConfirmUserDTO confirmUserDTO) {
-        logger.info(confirmUserDTO.getUsername());
-
+    private void confirmUserLocal(ConfirmUserDTO confirmUserDTO) {
         AdminConfirmSignUpRequest adminConfirmSignUpRequest = AdminConfirmSignUpRequest.builder()
                 .userPoolId(USER_POOL_ID)
                 .username(confirmUserDTO.getUsername()).build();
 
         cognitoClient.adminConfirmSignUp(adminConfirmSignUpRequest);
+    }
+
+    @NotNull
+    private static UserResponseDTO getUserResponseDTO(GetUserResponse getUserResponse) {
+        List<AttributeType> userAttributes = getUserResponse.userAttributes();
+
+        String name = "";
+        String email = "";
+        String phoneNumber = "";
+
+        for (AttributeType attr : userAttributes) {
+            switch (attr.name()) {
+                case "name":
+                    name = attr.value();
+                    break;
+                case "email":
+                    email = attr.value();
+                    break;
+                case "phone_number":
+                    phoneNumber = attr.value();
+                    break;
+            }
+        }
+
+        return new UserResponseDTO(
+                getUserResponse.username(),
+                email,
+                name,
+                phoneNumber
+        );
     }
 
     private Map<String, String> getURIParams(AuthType authType) {

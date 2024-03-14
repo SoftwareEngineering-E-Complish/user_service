@@ -1,11 +1,9 @@
 package com.ecomplish.user_service.controller;
 
-import com.ecomplish.user_service.controller.UserController;
-import com.ecomplish.user_service.model.AccessTokenDTO;
-import com.ecomplish.user_service.model.ConfirmUserDTO;
-import com.ecomplish.user_service.model.UpdatePasswordDTO;
-import com.ecomplish.user_service.model.UpdateUserDTO;
-import com.ecomplish.user_service.model._enum.AuthType;
+import com.ecomplish.user_service.model.DTO.AccessTokenDTO;
+import com.ecomplish.user_service.model.DTO.ConfirmUserDTO;
+import com.ecomplish.user_service.model.DTO.UpdatePasswordDTO;
+import com.ecomplish.user_service.model.DTO.UpdateUserDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -17,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminUpdateUserAttributesRequest;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminUpdateUserAttributesResponse;
-import software.amazon.awssdk.services.cognitoidentityprovider.model.AttributeType;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
@@ -99,14 +96,8 @@ public class UserControllerUnitTest {
         // Create a mock UserController object
         UserController userController = mock(UserController.class);
 
-        // Mocking confirmUserLocal method
-        doNothing().when(userController).confirmUserLocal(any());
-
         // Call the method to be tested
         ResponseEntity<String> responseEntity = userController.confirmUser(confirmUserDTO);
-
-        // Verify that confirmUserLocal method is called
-        verify(userController, times(1)).confirmUserLocal(any());
 
         // Check if the response status is OK
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
