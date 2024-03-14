@@ -8,7 +8,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -21,6 +23,24 @@ public class UserControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Test
+    public void testLoginURL() throws Exception {
+        mockMvc.perform(get("/loginURL"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void testSignupURL() throws Exception {
+        mockMvc.perform(get("/signupURL"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void testLogoutURL() throws Exception {
+        mockMvc.perform(get("/logoutURL"))
+                .andExpect(status().isOk());
+    }
 
     @Test
     public void testCreateUser() throws Exception {
@@ -49,14 +69,14 @@ public class UserControllerTest {
 
 
 
-//    @Test
-//    public void testConfirmUser() throws Exception {
-//        JSONObject jsonObject = new JSONObject();
-//        jsonObject.put("username", "testUser5");
-//
-//        mockMvc.perform(post("/confirmUser")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(jsonObject.toString()))
-//                .andExpect(status().isOk());
-//    }
+    @Test
+    public void testConfirmUser() throws Exception {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("username", "testuser1");
+
+        mockMvc.perform(post("/confirmUser")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonObject.toString()))
+                .andExpect(status().isOk());
+    }
 }
