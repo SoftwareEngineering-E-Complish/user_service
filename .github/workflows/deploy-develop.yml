@@ -6,7 +6,7 @@ on:
       - feature/basic-user-mgmt-use-cases
 
 jobs:
-  deploy:
+  deploy-develop:
     runs-on: ubuntu-latest
 
     steps:
@@ -19,7 +19,7 @@ jobs:
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         with:
-          projectBaseDir: src
+          projectBaseDir: src/
           args: >
             -Dsonar.python.coverage.reportPaths=target/coverage.xml
             -Dsonar.sources=src/
