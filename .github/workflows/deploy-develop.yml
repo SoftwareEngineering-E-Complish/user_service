@@ -17,7 +17,7 @@ jobs:
         run: |
           docker build -t user-service .
           # docker tag user-service:latest localhost:4566/user-service:latest
-          docker tag user-service:ami-000001 localstack-ec2/user-service:ami-000001
+          docker tag user-service:latest localstack-ec2/user-service:ami-000001
 
       - name: Start LocalStack
         uses: LocalStack/setup-localstack@main
