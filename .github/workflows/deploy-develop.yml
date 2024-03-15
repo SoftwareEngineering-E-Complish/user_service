@@ -1,0 +1,41 @@
+name: User Service Develop Branch CI/CD
+
+on:
+  push:
+    branches:
+      - feature/basic-user-mgmt-use-cases
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+
+      - name: Build Docker image
+        run: |
+          docker build -t user-service .
+          docker tag user-service:latest localhost:5000/user-service:latest
+
+      - name: Start LocalStack
+        uses: LocalStack/setup-localstack@main
+        with:
+          image-tag: 'latest'
+          install-awslocal: 'true'
+
+      - name: Push Docker image to LocalStack
+        run: |
+          # Push the Docker image to the LocalStack Docker registry
+          docker push localhost:5000/user-service:latest
+
+      - name: Run Tests against LocalStack
+        run: |
+          # Example: Run tests using AWS CLI commands against LocalStack
+          awslocal ec2 describe-instances
+          # Add more test commands as needed
