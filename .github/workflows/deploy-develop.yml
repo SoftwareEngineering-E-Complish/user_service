@@ -18,14 +18,6 @@ jobs:
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
-        with:
-          projectBaseDir: src/
-          args: >
-            -Dsonar.python.coverage.reportPaths=target/coverage.xml
-            -Dsonar.sources=src/
-            -Dsonar.test.exclusions=src/test/**
-            -Dsonar.tests=src/test/
-            -Dsonar.verbose=true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
