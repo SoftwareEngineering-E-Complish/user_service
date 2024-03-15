@@ -20,6 +20,11 @@
 		<maven.compiler.source>11</maven.compiler.source>
 		<junit.jupiter.version>5.8.2</junit.jupiter.version>
 		<junit.platform.version>1.8.2</junit.platform.version>
+		<sonar.organization>softwareengineering-e-complish</sonar.organization>
+  		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
+		<sonar.java.binaries>target/classes</sonar.java.binaries>
+		<sonar.tests>src/test/java/com/ecomplish/user_service/unit</sonar.tests>
+		<sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
 	</properties>
 	<dependencies>
 		<dependency>

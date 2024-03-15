@@ -1,5 +1,8 @@
-C:\Users\Aramis\Documents\University\Advanced Software Engineering\user_service\src\main\java\com\ecomplish\user_service\model\UpdateUserDTO.java
-C:\Users\Aramis\Documents\University\Advanced Software Engineering\user_service\src\main\java\com\ecomplish\user_service\model\ConfirmUserDTO.java
+C:\Users\Aramis\Documents\University\Advanced Software Engineering\user_service\src\main\java\com\ecomplish\user_service\model\DTO\AccessTokenDTO.java
+C:\Users\Aramis\Documents\University\Advanced Software Engineering\user_service\src\main\java\com\ecomplish\user_service\model\DTO\UpdatePasswordDTO.java
+C:\Users\Aramis\Documents\University\Advanced Software Engineering\user_service\src\main\java\com\ecomplish\user_service\model\UserResponseDTO.java
+C:\Users\Aramis\Documents\University\Advanced Software Engineering\user_service\src\main\java\com\ecomplish\user_service\model\DTO\ConfirmUserDTO.java
+C:\Users\Aramis\Documents\University\Advanced Software Engineering\user_service\src\main\java\com\ecomplish\user_service\model\DTO\UpdateUserDTO.java
 C:\Users\Aramis\Documents\University\Advanced Software Engineering\user_service\src\main\java\com\ecomplish\user_service\model\_enum\AuthType.java
 C:\Users\Aramis\Documents\University\Advanced Software Engineering\user_service\src\main\java\com\ecomplish\user_service\UserServiceApplication.java
 C:\Users\Aramis\Documents\University\Advanced Software Engineering\user_service\src\main\java\com\ecomplish\user_service\controller\UserController.java

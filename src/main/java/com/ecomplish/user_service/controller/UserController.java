@@ -145,12 +145,11 @@ public class UserController {
     @GetMapping("/verifyAccessToken")
     public ResponseEntity<Boolean> verifyAccessToken(@RequestParam String accessToken) {
         try {
-            AdminGetUserRequest adminGetUserRequest = AdminGetUserRequest.builder()
-                    .userPoolId(USER_POOL_ID)
-                    .username(accessToken)
+            GetUserRequest getUserRequest = GetUserRequest.builder()
+                    .accessToken(accessToken)
                     .build();
 
-            this.cognitoClient.adminGetUser(adminGetUserRequest);
+            this.cognitoClient.getUser(getUserRequest);
 
             return ResponseEntity.ok(true);
         } catch (CognitoIdentityProviderException e) {
@@ -202,18 +201,6 @@ public class UserController {
         }
     }
 
-    @PostMapping("/confirmUser")
-    public ResponseEntity<String> confirmUser(@RequestBody ConfirmUserDTO confirmUserDTO) {
-        try {
-            this.confirmUserLocal(confirmUserDTO);
-
-            return ResponseEntity.ok().build();
-        } catch (Exception e){
-            logger.info(e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
     @PostMapping("/getAccessToken")
     public ResponseEntity<String> getAccessToken(@RequestBody AccessTokenDTO accessTokenDTO) {
         try {
@@ -235,14 +222,6 @@ public class UserController {
             logger.info(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-    }
-
-    private void confirmUserLocal(ConfirmUserDTO confirmUserDTO) {
-        AdminConfirmSignUpRequest adminConfirmSignUpRequest = AdminConfirmSignUpRequest.builder()
-                .userPoolId(USER_POOL_ID)
-                .username(confirmUserDTO.getUsername()).build();
-
-        cognitoClient.adminConfirmSignUp(adminConfirmSignUpRequest);
     }
 
     @NotNull

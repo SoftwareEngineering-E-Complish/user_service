@@ -1,20 +1,22 @@
-# Use a base image with JDK 11 and Maven pre-installed
-FROM maven:3.6.3-openjdk-11 AS build
+# Use a base image with JDK 17 (or higher) and Maven pre-installed
+FROM maven:3.6.3-openjdk-17 AS build
 
 # Set the working directory in the container
 WORKDIR /app
 
 # Copy the Maven project
-COPY ./src/main ./src/main
+COPY ./src ./src
 COPY ./mvnw ./mvnw
 COPY ./pom.xml ./pom.xml
 
+ARG USER_SERVICE_SONAR_PROJECT_KEY
+ARG USER_SERVICE_SONAR_ORGANIZATION_KEY
+ARG USER_SERVICE_SONAR_TOKEN
 # Package the application using parallel builds and go offline
-#RUN mvn -T 1C clean package -DskipTests
-RUN --mount=type=cache,target=/root/.m2,rw mvn clean install -DskipTests
+RUN --mount=type=cache,target=/root/.m2,rw mvn -T 8 clean verify sonar:sonar -Dsonar.projectKey=$USER_SERVICE_SONAR_PROJECT_KEY -Dsonar.organization=$USER_SERVICE_SONAR_ORGANIZATION_KEY -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$USER_SERVICE_SONAR_TOKEN -Dsonar.qualitygate.wait=true
 
 # Create a new image with JRE only
-FROM openjdk:11-jdk-slim
+FROM openjdk:17-jdk-slim
 
 # Copy the packaged jar file from the build stage to the new image
 COPY --from=build /app/target/*.jar app.jar
