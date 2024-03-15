@@ -16,21 +16,30 @@ jobs:
       - name: Build Docker image
         run: |
           docker build -t user-service .
-          docker tag user-service:latest localhost:4566/user-service:latest
+          # docker tag user-service:latest localhost:4566/user-service:latest
+          docker tag user-service:ami-000001 localstack-ec2/user-service:ami-000001
 
       - name: Start LocalStack
         uses: LocalStack/setup-localstack@main
         with:
           image-tag: 'latest'
           install-awslocal: 'true'
+          configuration: DEBUG=1
 
       - name: Push Docker image to LocalStack
         run: |
           # Push the Docker image to the LocalStack Docker registry
-          docker push localhost:4566/user-service:latest
+          docker push localstack-ec2/user-service:ami-000001
 
       - name: Run Tests against LocalStack
         run: |
-          # Example: Run tests using AWS CLI commands against LocalStack
+          # Create a security group
+          awslocal ec2 create-security-group --group-name my-sg --description "My security group"
+        
+          # Launch an EC2 instance
+          awslocal ec2 run-instances --image-id ami-000001 --count 1 --instance-type t2.micro --key-name my-key-pair --security-groups my-sg
+        
+          # Describe the EC2 instance
           awslocal ec2 describe-instances
+        
           # Add more test commands as needed
