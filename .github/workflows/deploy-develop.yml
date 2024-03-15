@@ -16,7 +16,7 @@ jobs:
       - name: Build Docker image
         run: |
           docker build -t user-service .
-          docker tag user-service:latest localhost:5000/user-service:latest
+          docker tag user-service:latest localhost:4566/user-service:latest
 
       - name: Start LocalStack
         uses: LocalStack/setup-localstack@main
@@ -27,7 +27,7 @@ jobs:
       - name: Push Docker image to LocalStack
         run: |
           # Push the Docker image to the LocalStack Docker registry
-          docker push localhost:5000/user-service:latest
+          docker push localhost:4566/user-service:latest
 
       - name: Run Tests against LocalStack
         run: |
