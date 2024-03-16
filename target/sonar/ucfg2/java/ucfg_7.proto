@@ -1,0 +1,47 @@
+
+fcom.ecomplish.user_service.controller.UserController#deleteUser(Ljava/lang/String;)Ljava/lang/Boolean; 
+•/Users/aramis/Documents/University/Advanced Software Engineering/user_service/src/main/java/com/ecomplish/user_service/controller/UserController.java/ /("startingBlock*°
+startingBlock/ /(<±
+®
+/ /(+
+%2"
+__annotate*T
+
+__unknown_file (86
+4org.springframework.web.bind.annotation.RequestParam*:
+
+__unknown_file (
+
+usernamejava.lang.String\
+Z
+/3 /(;
+usernamejava.lang.String"__annotation*"
+
+__unknown_file (
+
+%2*
+1*¢
+10 0(°
+­
+0 0(4
+%0.com.ecomplish.user_service.service.UserService"__id*e
+
+__unknown_file (I*G6
+4com.ecomplish.user_service.controller.UserController"
+userService¸µ
+0 0(/
+%1java.lang.Boolean"`com.ecomplish.user_service.service.UserService#deleteUser(Ljava/lang/String;)Ljava/lang/Boolean;*R
+
+__unknown_file (6
+4
+%0.com.ecomplish.user_service.service.UserService*:
+
+__unknown_file (
+
+usernamejava.lang.String2deleteUser(Ljava/lang/String;)"%
+0 0(0
+
+%1java.lang.Boolean:(
+/ /(;
+usernamejava.lang.StringB86
+4com.ecomplish.user_service.controller.UserControllerH

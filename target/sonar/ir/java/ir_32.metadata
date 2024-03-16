@@ -1,0 +1,8 @@
+com.ecomplish.user_service.service.UserService#getDomain()Ljava/lang/String;
+software.amazon.awssdk.services.cognitoidentityprovider.model.DescribeUserPoolRequest#builder()Lsoftware/amazon/awssdk/services/cognitoidentityprovider/model/DescribeUserPoolRequest$Builder;
+software.amazon.awssdk.services.cognitoidentityprovider.model.DescribeUserPoolResponse#userPool()Lsoftware/amazon/awssdk/services/cognitoidentityprovider/model/UserPoolType;
+software.amazon.awssdk.services.cognitoidentityprovider.model.UserPoolType#domain()Ljava/lang/String;
+==
+userPoolId software.amazon.awssdk.services.cognitoidentityprovider.model.DescribeUserPoolRequest$Builder#userPoolId(Ljava/lang/String;)Lsoftware/amazon/awssdk/services/cognitoidentityprovider/model/DescribeUserPoolRequest$Builder;
+build software.amazon.awssdk.utils.builder.SdkBuilder#build()Ljava/lang/Object;
+describeUserPool software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient#describeUserPool(Lsoftware/amazon/awssdk/services/cognitoidentityprovider/model/DescribeUserPoolRequest;)Lsoftware/amazon/awssdk/services/cognitoidentityprovider/model/DescribeUserPoolResponse;

@@ -13,7 +13,7 @@ ARG USER_SERVICE_SONAR_PROJECT_KEY
 ARG USER_SERVICE_SONAR_ORGANIZATION_KEY
 ARG USER_SERVICE_SONAR_TOKEN
 # Package the application using parallel builds and go offline
-RUN --mount=type=cache,target=/root/.m2,rw mvn -T 8 clean verify sonar:sonar -Dsonar.projectKey=$USER_SERVICE_SONAR_PROJECT_KEY -Dsonar.organization=$USER_SERVICE_SONAR_ORGANIZATION_KEY -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$USER_SERVICE_SONAR_TOKEN -Dsonar.qualitygate.wait=true
+RUN --mount=type=cache,target=/root/.m2,rw mvn -T 8 clean verify sonar:sonar -Dsonar.login=$USER_SERVICE_SONAR_TOKEN -Dsonar.qualitygate.wait=true
 
 # Create a new image with JRE only
 FROM openjdk:17-jdk-slim
