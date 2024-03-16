@@ -10,6 +10,9 @@ COPY ./mvnw ./mvnw
 COPY ./pom.xml ./pom.xml
 
 ARG USER_SERVICE_SONAR_TOKEN
+ARG AWS_REGION
+ARG AWS_ACCESS_KEY_ID
+ARG AWS_SECRET_ACCESS_KEY
 # Package the application using parallel builds and go offline
 RUN --mount=type=cache,target=/root/.m2,rw mvn -T 8 clean verify sonar:sonar -Dsonar.login=$USER_SERVICE_SONAR_TOKEN -Dsonar.qualitygate.wait=true
 
