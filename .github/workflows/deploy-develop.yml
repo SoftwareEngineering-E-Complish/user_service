@@ -3,7 +3,7 @@ name: User Service Develop Branch CI/CD
 on:
   push:
     branches:
-      - develop
+      - feature/new-deployment-config
 
 jobs:
   deploy-develop:
@@ -16,28 +16,53 @@ jobs:
           # Disabling shallow clone is recommended for improving relevancy of reporting
           fetch-depth: 0
 
-      - name: Build Docker image
-        run: |
-          docker build -t user-service . --build-arg AWS_REGION=${{ secrets.AWS_REGION }} --build-arg AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} --build-arg AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} --build-arg USER_SERVICE_SONAR_TOKEN=${{ secrets.USER_SERVICE_SONAR_TOKEN }}
-          docker tag user-service:latest user-service:latest
-
-      - name: Start LocalStack
-        uses: LocalStack/setup-localstack@main
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
         with:
-          image-tag: 'latest'
-          install-awslocal: 'true'
+          java-version: 17
+          distribution: 'zulu' # Alternative distribution options are available.
 
-      - name: Run Docker Image
-        run: |
-          docker run -e AWS_REGION=${{ secrets.AWS_REGION }} -e AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} -e USER_SERVICE_SONAR_TOKEN=${{ secrets.USER_SERVICE_SONAR_TOKEN }} -d --name user-service user-service:latest
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
 
-      - name: Run Tests against LocalStack
-        run: |
-          # Create a security group
-          awslocal ec2 create-security-group --group-name my-sg --description "My security group"
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Build and analyze
+        env:
+          SONAR_TOKEN: ${{ secrets.USER_SERVICE_SONAR_TOKEN }}
+        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=SoftwareEngineering-E-Complish_user_service
+
+      # - name: Build Docker image
+      #   run: |
+      #     docker build -t user-service . --build-arg AWS_REGION=${{ secrets.AWS_REGION }} --build-arg AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} --build-arg AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} --build-arg USER_SERVICE_SONAR_TOKEN=${{ secrets.USER_SERVICE_SONAR_TOKEN }}
+      #     docker tag user-service:latest user-service:latest
+
+      # - name: Start LocalStack
+      #   uses: LocalStack/setup-localstack@main
+      #   with:
+      #     image-tag: 'latest'
+      #     install-awslocal: 'true'
+
+      # - name: Run Docker Image
+      #   run: |
+      #     docker run -e AWS_REGION=${{ secrets.AWS_REGION }} -e AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} -e USER_SERVICE_SONAR_TOKEN=${{ secrets.USER_SERVICE_SONAR_TOKEN }} -d --name user-service user-service:latest
+
+      # - name: Run Tests against LocalStack
+      #   run: |
+      #     # Create a security group
+      #     awslocal ec2 create-security-group --group-name my-sg --description "My security group"
         
-          # Launch an EC2 instance
-          awslocal ec2 run-instances --image-id ami-0abcdef1234567890 --count 1 --instance-type t2.micro --key-name my-key-pair --security-groups my-sg
+      #     # Launch an EC2 instance
+      #     awslocal ec2 run-instances --image-id ami-0abcdef1234567890 --count 1 --instance-type t2.micro --key-name my-key-pair --security-groups my-sg
         
-          # Describe the EC2 instance
-          awslocal ec2 describe-instances
+      #     # Describe the EC2 instance
+      #     awslocal ec2 describe-instances
