@@ -1,0 +1,3 @@
+com.ecomplish.user_service.controller.UserController#StringlogoutURL()Ljava/lang/String;
+==
+logoutURL com.ecomplish.user_service.service.UserService#logoutURL()Ljava/lang/String;

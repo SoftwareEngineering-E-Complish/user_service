@@ -1,0 +1,5 @@
+com.ecomplish.user_service.service.UserService#changePassword(Lcom/ecomplish/user_service/model/DTO/ChangePasswordDTO;)Ljava/lang/Boolean;
+software.amazon.awssdk.services.cognitoidentityprovider.model.ChangePasswordRequest#builder()Lsoftware/amazon/awssdk/services/cognitoidentityprovider/model/ChangePasswordRequest$Builder;
+==
+accessToken software.amazon.awssdk.services.cognitoidentityprovider.model.ChangePasswordRequest$Builder#accessToken(Ljava/lang/String;)Lsoftware/amazon/awssdk/services/cognitoidentityprovider/model/ChangePasswordRequest$Builder;
+changePassword software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient#changePassword(Lsoftware/amazon/awssdk/services/cognitoidentityprovider/model/ChangePasswordRequest;)Lsoftware/amazon/awssdk/services/cognitoidentityprovider/model/ChangePasswordResponse;

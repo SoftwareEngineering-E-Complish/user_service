@@ -1,0 +1,6 @@
+com.ecomplish.user_service.service.UserService#verifyAccessToken(Ljava/lang/String;)Ljava/lang/Boolean;
+software.amazon.awssdk.services.cognitoidentityprovider.model.GetUserRequest#builder()Lsoftware/amazon/awssdk/services/cognitoidentityprovider/model/GetUserRequest$Builder;
+==
+build software.amazon.awssdk.utils.builder.SdkBuilder#build()Ljava/lang/Object;
+getUser software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient#getUser(Lsoftware/amazon/awssdk/services/cognitoidentityprovider/model/GetUserRequest;)Lsoftware/amazon/awssdk/services/cognitoidentityprovider/model/GetUserResponse;
+accessToken software.amazon.awssdk.services.cognitoidentityprovider.model.GetUserRequest$Builder#accessToken(Ljava/lang/String;)Lsoftware/amazon/awssdk/services/cognitoidentityprovider/model/GetUserRequest$Builder;

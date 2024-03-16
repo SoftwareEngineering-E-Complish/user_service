@@ -1,0 +1,7 @@
+com.ecomplish.user_service.service.UserService#<init>()V
+software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider#create()Lsoftware/amazon/awssdk/auth/credentials/DefaultCredentialsProvider;
+software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient#builder()Lsoftware/amazon/awssdk/services/cognitoidentityprovider/CognitoIdentityProviderClientBuilder;
+java.lang.System#getenv(Ljava/lang/String;)Ljava/lang/String;
+==
+credentialsProvider software.amazon.awssdk.awscore.client.builder.AwsClientBuilder#credentialsProvider(Lsoftware/amazon/awssdk/auth/credentials/AwsCredentialsProvider;)Lsoftware/amazon/awssdk/awscore/client/builder/AwsClientBuilder;
+build software.amazon.awssdk.utils.builder.SdkBuilder#build()Ljava/lang/Object;

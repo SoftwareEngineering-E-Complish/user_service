@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">user_service</a> &gt; <a href="index.source.html" class="el_package">com.ecomplish.user_service.controller</a> &gt; <span class="el_source">UserController.java</span></div><h1>UserController.java</h1><pre class="source lang-java linenums">package com.ecomplish.user_service.controller;
+
+import com.ecomplish.user_service.model.DTO.AccessTokenDTO;
+import com.ecomplish.user_service.model.DTO.ChangePasswordDTO;
+import com.ecomplish.user_service.model.DTO.UpdateUserDTO;
+import com.ecomplish.user_service.model.UserResponseDTO;
+import com.ecomplish.user_service.service.UserService;
+import org.springframework.web.bind.annotation.*;
+
+import java.net.URISyntaxException;
+
+@RestController
+public class UserController {
+
+    UserService userService;
+
+<span class="fc" id="L17">    public UserController() {</span>
+<span class="fc" id="L18">        this.userService = new UserService();</span>
+<span class="fc" id="L19">    }</span>
+
+    @GetMapping(&quot;/loginURL&quot;)
+    public String loginURL() throws URISyntaxException {
+<span class="fc" id="L23">        return userService.loginURL();</span>
+    }
+
+    @GetMapping(&quot;/signupURL&quot;)
+    public String StringsignupURL() throws URISyntaxException {
+<span class="fc" id="L28">        return userService.signupURL();</span>
+    }
+
+    @GetMapping(&quot;/logoutURL&quot;)
+    public String StringlogoutURL() throws URISyntaxException {
+<span class="fc" id="L33">        return userService.logoutURL();</span>
+    }
+
+    @PostMapping(&quot;/updateUser&quot;)
+    public Boolean updateUser(@RequestBody UpdateUserDTO updateUserDTO) {
+<span class="fc" id="L38">        return userService.updateUser(updateUserDTO);</span>
+    }
+
+    @PostMapping(&quot;/changePassword&quot;)
+    public Boolean changePassword(@RequestBody ChangePasswordDTO changePasswordDTO) {
+<span class="fc" id="L43">        return userService.changePassword(changePasswordDTO);</span>
+    }
+
+    @PostMapping(&quot;/deleteUser&quot;)
+    public Boolean deleteUser(@RequestParam String username) {
+<span class="fc" id="L48">        return userService.deleteUser(username);</span>
+    }
+
+    @GetMapping(&quot;/verifyAccessToken&quot;)
+    public Boolean verifyAccessToken(@RequestParam String accessToken) {
+<span class="fc" id="L53">        return userService.verifyAccessToken(accessToken);</span>
+    }
+
+    @GetMapping(&quot;/user&quot;)
+    public UserResponseDTO user(@RequestParam String accessToken) {
+<span class="fc" id="L58">        return userService.user(accessToken);</span>
+    }
+
+    @GetMapping(&quot;/userId&quot;)
+    public String userId(@RequestParam String accessToken) {
+<span class="fc" id="L63">        return userService.userId(accessToken);</span>
+    }
+
+    @PostMapping(&quot;/getAccessToken&quot;)
+    public String getAccessToken(@RequestBody AccessTokenDTO accessTokenDTO) {
+<span class="fc" id="L68">        return userService.getAccessToken(accessTokenDTO);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
