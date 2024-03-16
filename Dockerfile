@@ -17,7 +17,6 @@ ENV AWS_REGION=${AWS_REGION}
 ENV AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
 ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
 
-ARG USER_SERVICE_SONAR_TOKEN
 # Package the application using parallel builds and go offline
 RUN --mount=type=cache,target=/root/.m2,rw mvn -T 8 clean package
 
