@@ -18,7 +18,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t user-service . -e AWS_REGION=${{ secrets.AWS_REGION }} -e AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} -e USER_SERVICE_SONAR_TOKEN=${{ secrets.USER_SERVICE_SONAR_TOKEN }}
+          docker build -t user-service . --build-arg AWS_REGION=${{ secrets.AWS_REGION }} --build-arg AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} --build-arg AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} --build-arg USER_SERVICE_SONAR_TOKEN=${{ secrets.USER_SERVICE_SONAR_TOKEN }}
           docker tag user-service:latest user-service:latest
 
       - name: Start LocalStack
