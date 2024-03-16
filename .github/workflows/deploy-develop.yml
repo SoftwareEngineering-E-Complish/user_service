@@ -45,10 +45,10 @@ jobs:
           USER_SERVICE_SONAR_TOKEN: ${{ secrets.USER_SERVICE_SONAR_TOKEN }}
         run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=SoftwareEngineering-E-Complish_user_service
 
-      # - name: Build Docker image
-      #   run: |
-      #     docker build -t user-service . --build-arg AWS_REGION=${{ secrets.AWS_REGION }} --build-arg AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} --build-arg AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} --build-arg USER_SERVICE_SONAR_TOKEN=${{ secrets.USER_SERVICE_SONAR_TOKEN }}
-      #     docker tag user-service:latest user-service:latest
+      - name: Build Docker image
+        run: |
+          docker build -t user-service . --build-arg AWS_REGION=${{ secrets.AWS_REGION }} --build-arg AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} --build-arg AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} --build-arg USER_SERVICE_SONAR_TOKEN=${{ secrets.USER_SERVICE_SONAR_TOKEN }}
+          docker tag user-service:latest user-service:latest
 
       # - name: Start LocalStack
       #   uses: LocalStack/setup-localstack@main
