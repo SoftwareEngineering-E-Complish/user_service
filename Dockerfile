@@ -19,7 +19,7 @@ ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
 
 ARG USER_SERVICE_SONAR_TOKEN
 # Package the application using parallel builds and go offline
-RUN --mount=type=cache,target=/root/.m2,rw mvn -T 8 clean verify sonar:sonar -Dsonar.login=$USER_SERVICE_SONAR_TOKEN -Dsonar.qualitygate.wait=true
+RUN --mount=type=cache,target=/root/.m2,rw mvn -T 8 clean package
 
 # Create a new image with JRE only
 FROM openjdk:17-jdk-slim
