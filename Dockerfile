@@ -9,8 +9,6 @@ COPY ./src ./src
 COPY ./mvnw ./mvnw
 COPY ./pom.xml ./pom.xml
 
-ARG USER_SERVICE_SONAR_PROJECT_KEY
-ARG USER_SERVICE_SONAR_ORGANIZATION_KEY
 ARG USER_SERVICE_SONAR_TOKEN
 # Package the application using parallel builds and go offline
 RUN --mount=type=cache,target=/root/.m2,rw mvn -T 8 clean verify sonar:sonar -Dsonar.login=$USER_SERVICE_SONAR_TOKEN -Dsonar.qualitygate.wait=true
