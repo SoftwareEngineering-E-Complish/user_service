@@ -1,3 +1,8 @@
-/Users/aramis/Documents/University/Advanced Software Engineering/user_service/src/main/java/com/ecomplish/user_service/UserServiceApplication.java
+/Users/aramis/Documents/University/Advanced Software Engineering/user_service/src/main/java/com/ecomplish/user_service/service/UserService.java
 /Users/aramis/Documents/University/Advanced Software Engineering/user_service/src/main/java/com/ecomplish/user_service/controller/UserController.java
-/Users/aramis/Documents/University/Advanced Software Engineering/user_service/src/main/java/com/ecomplish/user_service/model/CreateUserDTO.java
+/Users/aramis/Documents/University/Advanced Software Engineering/user_service/src/main/java/com/ecomplish/user_service/model/_enum/AuthType.java
+/Users/aramis/Documents/University/Advanced Software Engineering/user_service/src/main/java/com/ecomplish/user_service/model/DTO/UpdateUserDTO.java
+/Users/aramis/Documents/University/Advanced Software Engineering/user_service/src/main/java/com/ecomplish/user_service/model/UserResponseDTO.java
+/Users/aramis/Documents/University/Advanced Software Engineering/user_service/src/main/java/com/ecomplish/user_service/UserServiceApplication.java
+/Users/aramis/Documents/University/Advanced Software Engineering/user_service/src/main/java/com/ecomplish/user_service/model/DTO/ChangePasswordDTO.java
+/Users/aramis/Documents/University/Advanced Software Engineering/user_service/src/main/java/com/ecomplish/user_service/model/DTO/AccessTokenDTO.java

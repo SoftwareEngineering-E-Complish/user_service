@@ -1,30 +1,34 @@
-# Start with a base image containing Java runtime and Gradle
-FROM gradle:7.2.0-jdk11 as build
+# Use a base image with JDK 17 (or higher) and Maven pre-installed
+FROM maven:3.6.3-openjdk-17 AS build
 
 # Set the working directory in the container
 WORKDIR /app
 
-# Copy all gradle files
-COPY build.gradle settings.gradle gradlew ./
-COPY gradle ./gradle
+# Copy the Maven project
+COPY ./src ./src
+COPY ./mvnw ./mvnw
+COPY ./pom.xml ./pom.xml
 
-# Copy the source code
-COPY src src
+ARG AWS_REGION
+ARG AWS_ACCESS_KEY_ID
+ARG AWS_SECRET_ACCESS_KEY
 
-# Build the application
-RUN ./gradlew build --no-daemon
+ENV AWS_REGION=${AWS_REGION}
+ENV AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
 
-# Start with a base image containing Java runtime
-FROM openjdk:11-jdk-slim
+ARG USER_SERVICE_SONAR_TOKEN
+# Package the application using parallel builds and go offline
+RUN --mount=type=cache,target=/root/.m2,rw mvn -T 8 clean verify sonar:sonar -Dsonar.login=$USER_SERVICE_SONAR_TOKEN -Dsonar.qualitygate.wait=true
 
-# Set the working directory in the container
-WORKDIR /app
+# Create a new image with JRE only
+FROM openjdk:17-jdk-slim
 
-# Copy the jar file from the build stage
-COPY --from=build /app/build/libs/*.jar app.jar
+# Copy the packaged jar file from the build stage to the new image
+COPY --from=build /app/target/*.jar app.jar
 
-# Make port 8080 available to the world outside this container
+# Expose the port the application runs on
 EXPOSE 8080
 
-# Run the jar file
-ENTRYPOINT ["java","-jar","app.jar"]
+# Define the command to run the application when the container starts
+CMD ["java", "-jar", "app.jar"]

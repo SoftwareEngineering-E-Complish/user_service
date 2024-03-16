@@ -1,62 +1,133 @@
 package com.ecomplish.user_service.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.json.JSONObject;
+import com.ecomplish.user_service.model.DTO.AccessTokenDTO;
+import com.ecomplish.user_service.model.DTO.ChangePasswordDTO;
+import com.ecomplish.user_service.model.DTO.UpdateUserDTO;
+import com.ecomplish.user_service.model.UserResponseDTO;
+import com.ecomplish.user_service.service.UserService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
-@AutoConfigureMockMvc
 public class UserControllerTest {
 
-    @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    private final UserController userController;
+
+    public UserControllerTest() {
+        CognitoIdentityProviderClient cognitoClient = Mockito.mock(CognitoIdentityProviderClient.class);
+        UserService userService = Mockito.mock(UserService.class);
+        userService.cognitoClient = cognitoClient;
+        userService.USER_POOL_ID = "eu-central-1_tHxxikvel";
+        userService.CLIENT_ID = "53mpp04dd8k69oj9gprorn0vic";
+        userService.HOSTED_UI_BASE_URL = "https://<DOMAIN>.auth.eu-central-1.amazoncognito.com";
+
+        this.userController = new UserController();
+        this.userController.userService = userService;
+    }
+
+    @BeforeEach
+    public void setUp() {
+        MockitoAnnotations.openMocks(this);
+        mockMvc = MockMvcBuilders.standaloneSetup(userController).build();
+    }
 
     @Test
-    public void testCreateUser() throws Exception {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("username", "testUser10");
-        jsonObject.put("name", "testName");
-        jsonObject.put("familyName", "testFamilyName");
-        jsonObject.put("email", "test@example.com");
-        jsonObject.put("password", "Test@123");
+    public void testLoginURL() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/loginURL"))
+                .andExpect(status().isOk())
+                .andReturn();
+    }
 
-        mockMvc.perform(post("/createUser")
+    @Test
+    public void testSignupURL() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/signupURL"))
+                .andExpect(status().isOk())
+                .andReturn();
+    }
+
+    @Test
+    public void testLogoutURL() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/logoutURL"))
+                .andExpect(status().isOk())
+                .andReturn();
+    }
+
+    @Test
+    public void testUpdateUser() throws Exception {
+        when(this.userController.userService.updateUser(any(UpdateUserDTO.class))).thenReturn(true);
+        mockMvc.perform(MockMvcRequestBuilders.post("/updateUser")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonObject.toString()))
+                        .content("{}"))
                 .andExpect(status().isOk());
     }
 
     @Test
-    public void testLoginUser() throws Exception {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("username", "testUser10");
-        jsonObject.put("password", "Test@123");
-
-        mockMvc.perform(post("/loginUser")
+    public void testChangePassword() throws Exception {
+        when(this.userController.userService.changePassword(any(ChangePasswordDTO.class))).thenReturn(true);
+        mockMvc.perform(MockMvcRequestBuilders.post("/changePassword")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonObject.toString()))
+                        .content("{}"))
                 .andExpect(status().isOk());
     }
 
-//    @Test
-//    public void testConfirmUser() throws Exception {
-//        JSONObject jsonObject = new JSONObject();
-//        jsonObject.put("username", "testUser5");
-//
-//        mockMvc.perform(post("/confirmUser")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(jsonObject.toString()))
-//                .andExpect(status().isOk());
-//    }
+    @Test
+    public void testDeleteUser() throws Exception {
+        when(this.userController.userService.deleteUser("username")).thenReturn(true);
+        mockMvc.perform(MockMvcRequestBuilders.post("/deleteUser")
+                        .param("username", "username"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void testVerifyAccessToken() throws Exception {
+        when(this.userController.userService.verifyAccessToken("accessToken")).thenReturn(true);
+        mockMvc.perform(MockMvcRequestBuilders.get("/verifyAccessToken")
+                        .param("accessToken", "accessToken"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void testUser() throws Exception {
+        when(this.userController.userService.user("accessToken")).thenReturn(new UserResponseDTO(
+            "testuser1",
+            "test@example.com",
+            "name",
+            "+123456"
+        ));
+        mockMvc.perform(MockMvcRequestBuilders.get("/user")
+                        .param("accessToken", "accessToken"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void testUserId() throws Exception {
+        when(this.userController.userService.userId("accessToken")).thenReturn("userId");
+        mockMvc.perform(MockMvcRequestBuilders.get("/userId")
+                        .param("accessToken", "accessToken"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void testGetAccessToken() throws Exception {
+        when(this.userController.userService.getAccessToken(any(AccessTokenDTO.class))).thenReturn("accessToken");
+        mockMvc.perform(MockMvcRequestBuilders.post("/getAccessToken")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isOk());
+    }
+
 }

@@ -1,0 +1,3 @@
+com.ecomplish.user_service.controller.UserController#updateUser(Lcom/ecomplish/user_service/model/DTO/UpdateUserDTO;)Ljava/lang/Boolean;
+==
+updateUser com.ecomplish.user_service.service.UserService#updateUser(Lcom/ecomplish/user_service/model/DTO/UpdateUserDTO;)Ljava/lang/Boolean;

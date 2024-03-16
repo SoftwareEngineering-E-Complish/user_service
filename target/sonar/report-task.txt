@@ -1,0 +1,7 @@
+organization=softwareengineering-e-complish
+projectKey=SoftwareEngineering-E-Complish_user_service
+serverUrl=https://sonarcloud.io
+serverVersion=8.0.0.53374
+dashboardUrl=https://sonarcloud.io/dashboard?id=SoftwareEngineering-E-Complish_user_service
+ceTaskId=AY5ICrtacV4ijp4mKPnQ
+ceTaskUrl=https://sonarcloud.io/api/ce/task?id=AY5ICrtacV4ijp4mKPnQ

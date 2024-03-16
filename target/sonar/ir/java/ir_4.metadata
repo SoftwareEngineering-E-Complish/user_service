@@ -1,0 +1,3 @@
+com.ecomplish.user_service.controller.UserController#loginURL()Ljava/lang/String;
+==
+loginURL com.ecomplish.user_service.service.UserService#loginURL()Ljava/lang/String;
