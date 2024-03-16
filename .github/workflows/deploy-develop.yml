@@ -3,7 +3,7 @@ name: User Service Develop Branch CI/CD
 on:
   push:
     branches:
-      - feature/new-deployment-config
+      - develop
 
 jobs:
   deploy-develop:
