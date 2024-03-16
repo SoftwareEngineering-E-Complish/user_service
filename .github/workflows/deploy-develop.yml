@@ -26,7 +26,6 @@ jobs:
         with:
           image-tag: 'latest'
           install-awslocal: 'true'
-          configuration: DEBUG=1
 
       - name: Run Docker Image
         run: |
