@@ -29,12 +29,14 @@ public class UserService {
     public CognitoIdentityProviderClient cognitoClient;
 
     public UserService() {
-        AwsCredentialsProvider credentialsProvider = DefaultCredentialsProvider.create();
+        String region = System.getenv("AWS_REGION");
+        if(region != null && !region.isBlank()) {
+            AwsCredentialsProvider credentialsProvider = DefaultCredentialsProvider.create();
 
-        this.cognitoClient = CognitoIdentityProviderClient.builder()
-                .credentialsProvider(credentialsProvider)
-                .build();
-
+            this.cognitoClient = CognitoIdentityProviderClient.builder()
+                    .credentialsProvider(credentialsProvider)
+                    .build();
+        }
         USER_POOL_ID = System.getenv("USER_POOL_ID");
         CLIENT_ID = System.getenv("CLIENT_ID");
         HOSTED_UI_BASE_URL = System.getenv("HOSTED_UI_BASE_URL");
