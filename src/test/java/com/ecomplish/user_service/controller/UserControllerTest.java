@@ -31,9 +31,9 @@ public class UserControllerTest {
         CognitoIdentityProviderClient cognitoClient = Mockito.mock(CognitoIdentityProviderClient.class);
         UserService userService = Mockito.mock(UserService.class);
         userService.cognitoClient = cognitoClient;
-        userService.USER_POOL_ID = "eu-central-1_tHxxikvel";
-        userService.CLIENT_ID = "53mpp04dd8k69oj9gprorn0vic";
-        userService.HOSTED_UI_BASE_URL = "https://<DOMAIN>.auth.eu-central-1.amazoncognito.com";
+        userService.USER_POOL_ID = "eu-central-1_123";
+        userService.CLIENT_ID = "AAAAAAA";
+        userService.HOSTED_UI_BASE_URL = "https://<DOMAIN>.auth.test.example.com";
 
         this.userController = new UserController();
         this.userController.userService = userService;
