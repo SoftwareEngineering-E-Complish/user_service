@@ -1,3 +1,0 @@
-com.ecomplish.user_service.controller.UserController#verifyAccessToken(Ljava/lang/String;)Ljava/lang/Boolean;
-==
-verifyAccessToken com.ecomplish.user_service.service.UserService#verifyAccessToken(Ljava/lang/String;)Ljava/lang/Boolean;

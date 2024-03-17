@@ -1,2 +1,0 @@
-com.ecomplish.user_service.service.UserService#loginURL()Ljava/lang/String;
-com.ecomplish.user_service.service.UserService#buildHostedUIURL(Lcom/ecomplish/user_service/model/_enum/AuthType;)Ljava/lang/String;
