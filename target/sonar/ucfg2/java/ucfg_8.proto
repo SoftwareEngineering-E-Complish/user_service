@@ -1,47 +1,0 @@
-
-mcom.ecomplish.user_service.controller.UserController#verifyAccessToken(Ljava/lang/String;)Ljava/lang/Boolean; 
-•/Users/aramis/Documents/University/Advanced Software Engineering/user_service/src/main/java/com/ecomplish/user_service/controller/UserController.java4 4($"startingBlock*¶
-startingBlock4$ 4(F´
-±
-4% 4(2
-%2"
-__annotate*T
-
-__unknown_file (86
-4org.springframework.web.bind.annotation.RequestParam*=
-
-__unknown_file (!
-
-accessTokenjava.lang.String_
-]
-4: 4(E
-accessTokenjava.lang.String"__annotation*"
-
-__unknown_file (
-
-%2*
-1*³
-15 5(°
-­
-5 5(4
-%0.com.ecomplish.user_service.service.UserService"__id*e
-
-__unknown_file (I*G6
-4com.ecomplish.user_service.controller.UserController"
-userServiceÉÆ
-5 5(9
-%1java.lang.Boolean"gcom.ecomplish.user_service.service.UserService#verifyAccessToken(Ljava/lang/String;)Ljava/lang/Boolean;*R
-
-__unknown_file (6
-4
-%0.com.ecomplish.user_service.service.UserService*=
-
-__unknown_file (!
-
-accessTokenjava.lang.String2%verifyAccessToken(Ljava/lang/String;)"%
-5 5(:
-
-%1java.lang.Boolean:+
-4% 4(E
-accessTokenjava.lang.StringB86
-4com.ecomplish.user_service.controller.UserControllerH

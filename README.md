@@ -1,6 +1,28 @@
-# Spring Boot Java Maven API Application
+# User Manager
 
-This is a Spring Boot Java Maven API application that provides [describe what your API does].
+This service provides functionality for user management, including user authentication, gathering user details and user account management.
+
+
+## Prerequisites
+
+Before you begin, ensure you have met the following requirements:
+
+1. **Configure AWS cli:**
+    
+    ```bash
+    aws configure
+    ```
+
+    Enter your AWS access key, secret key, and region when prompted.
+
+2. **Setup the following AWS Cognito User pool environment varibales:**
+
+    ```bash
+    CLIENT_ID=***
+    USER_POOL_ID=***
+    HOSTED_UI_BASE_URL=***
+    ```
+    
 
 ## Local Development
 
@@ -24,12 +46,13 @@ To run the application locally, follow these steps:
     ```bash
     mvn spring-boot:run
     ```
+
     The application will start and be accessible at http://localhost:8080.
 
 
 ## Docker Container
 
-To run the application in a Docker container, you'll need Docker installed on your machine. If you haven't installed Docker yet, please follow the official Docker installation guide.
+To run the application in a Docker container, you'll need Docker installed on your machine. Follow these steps:
 
 1. **Build the Docker image:**
     
@@ -40,7 +63,7 @@ To run the application in a Docker container, you'll need Docker installed on yo
 2. **Run the Docker container:**
     
     ```bash
-    docker run -p 8080:8080 <your-image-name>
+    docker run -e AWS_REGION=$AWS_REGION -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY -e CLIENT_ID=$CLIENT_ID -e USER_POOL_ID=$USER_POOL_ID -e HOSTED_UI_BASE_URL=$HOSTED_UI_BASE_URL -p 8080:8080 <your-image-name>
     ```
 
 The application will start within the Docker container and be accessible at http://localhost:8080.
@@ -48,15 +71,8 @@ The application will start within the Docker container and be accessible at http
 
 ## API Documentation
 
-# User Service API Documentation
-
-This document provides details about the User Service API endpoints.
-
 ## Base URL
-The base URL for all endpoints is: `http://your_domain.com`
-
-## Authentication
-Authentication is required for accessing most endpoints. Some endpoints may require an access token to be passed as a parameter.
+The base URL for all endpoints is: `http://localhost:8005`
 
 ## Endpoints
 

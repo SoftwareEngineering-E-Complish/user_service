@@ -1,3 +1,0 @@
-com.ecomplish.user_service.controller.UserController#user(Ljava/lang/String;)Lcom/ecomplish/user_service/model/UserResponseDTO;
-==
-user com.ecomplish.user_service.service.UserService#user(Ljava/lang/String;)Lcom/ecomplish/user_service/model/UserResponseDTO;
