@@ -1,3 +1,0 @@
-com.ecomplish.user_service.controller.UserController#getAccessToken(Lcom/ecomplish/user_service/model/DTO/AccessTokenDTO;)Ljava/lang/String;
-==
-getAccessToken com.ecomplish.user_service.service.UserService#getAccessToken(Lcom/ecomplish/user_service/model/DTO/AccessTokenDTO;)Ljava/lang/String;
