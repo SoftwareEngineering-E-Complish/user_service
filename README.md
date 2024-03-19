@@ -113,9 +113,9 @@ The base URL for all endpoints is: `http://localhost:8005`
 
 ### Delete User
 - URL: `/deleteUser`
-- Method: `POST`
+- Method: `GET`
 - Description: Deletes a user.
-- Request Parameter: `username` (String)
+- Request Parameter: `accessToken` (String)
 - Response: Returns `true` if the user is successfully deleted; otherwise, `false`.
 
 ### Verify Access Token

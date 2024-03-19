@@ -1,12 +1,10 @@
 package com.ecomplish.user_service.controller;
 
-import com.ecomplish.user_service.model.DTO.AccessTokenDTO;
-import com.ecomplish.user_service.model.DTO.ChangePasswordDTO;
-import com.ecomplish.user_service.model.DTO.UpdateUserDTO;
-import com.ecomplish.user_service.model.UserResponseDTO;
+import com.ecomplish.user_service.model.DTO.*;
 import com.ecomplish.user_service.service.UserService;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.net.URISyntaxException;
 
 @RestController
@@ -20,17 +18,22 @@ public class UserController {
 
     @GetMapping("/loginURL")
     public String loginURL() throws URISyntaxException {
-        return userService.loginURL();
+        return userService.getLoginURL();
     }
 
     @GetMapping("/signupURL")
-    public String StringsignupURL() throws URISyntaxException {
-        return userService.signupURL();
+    public String signupURL() throws URISyntaxException {
+        return userService.getSignupURL();
     }
 
     @GetMapping("/logoutURL")
-    public String StringlogoutURL() throws URISyntaxException {
-        return userService.logoutURL();
+    public String logoutURL() throws URISyntaxException {
+        return userService.getLogoutURL();
+    }
+
+    @GetMapping("/session")
+    public UserSessionResponseDTO session(String authorizationCode) throws URISyntaxException, IOException, InterruptedException {
+        return userService.getSession(authorizationCode);
     }
 
     @PostMapping("/updateUser")
@@ -43,9 +46,9 @@ public class UserController {
         return userService.changePassword(changePasswordDTO);
     }
 
-    @PostMapping("/deleteUser")
-    public Boolean deleteUser(@RequestParam String username) {
-        return userService.deleteUser(username);
+    @GetMapping("/deleteUser")
+    public Boolean deleteUser(@RequestParam String accessToken) {
+        return userService.deleteUser(accessToken);
     }
 
     @GetMapping("/verifyAccessToken")
@@ -55,16 +58,11 @@ public class UserController {
 
     @GetMapping("/user")
     public UserResponseDTO user(@RequestParam String accessToken) {
-        return userService.user(accessToken);
+        return userService.getUser(accessToken);
     }
 
     @GetMapping("/userId")
     public String userId(@RequestParam String accessToken) {
-        return userService.userId(accessToken);
-    }
-
-    @PostMapping("/getAccessToken")
-    public String getAccessToken(@RequestBody AccessTokenDTO accessTokenDTO) {
-        return userService.getAccessToken(accessTokenDTO);
+        return userService.getUserId(accessToken);
     }
 }

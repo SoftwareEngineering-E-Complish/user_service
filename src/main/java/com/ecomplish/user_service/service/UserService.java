@@ -1,17 +1,14 @@
 package com.ecomplish.user_service.service;
 
-import com.ecomplish.user_service.model.DTO.AccessTokenDTO;
-import com.ecomplish.user_service.model.DTO.ChangePasswordDTO;
-import com.ecomplish.user_service.model.DTO.UpdateUserDTO;
-import com.ecomplish.user_service.model.UserResponseDTO;
+import com.ecomplish.user_service.model.DTO.*;
 import com.ecomplish.user_service.model._enum.AuthType;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -19,6 +16,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
 @Service
 public class UserService {
@@ -28,9 +28,11 @@ public class UserService {
 
     public CognitoIdentityProviderClient cognitoClient;
 
+    public HttpClient httpClient;
+
     public UserService() {
         String region = System.getenv("AWS_REGION");
-        if(region != null && !region.isBlank()) {
+        if (region != null && !region.isBlank()) {
             AwsCredentialsProvider credentialsProvider = DefaultCredentialsProvider.create();
 
             this.cognitoClient = CognitoIdentityProviderClient.builder()
@@ -40,19 +42,44 @@ public class UserService {
         USER_POOL_ID = System.getenv("USER_POOL_ID");
         CLIENT_ID = System.getenv("CLIENT_ID");
         HOSTED_UI_BASE_URL = System.getenv("HOSTED_UI_BASE_URL");
+
+        this.httpClient = HttpClient.newHttpClient();
     }
 
-    public String loginURL() throws URISyntaxException {
+    public String getLoginURL() throws URISyntaxException {
         return buildHostedUIURL(AuthType.LOGIN);
     }
 
-    public String signupURL() throws URISyntaxException {
+    public String getSignupURL() throws URISyntaxException {
         return buildHostedUIURL(AuthType.SIGNUP);
     }
 
-    public String logoutURL() throws URISyntaxException {
+    public String getLogoutURL() throws URISyntaxException {
 
         return buildHostedUIURL(AuthType.LOGOUT);
+    }
+
+    public UserSessionResponseDTO getSession(String authorizationCode)
+            throws URISyntaxException, IOException, InterruptedException {
+        AuthType authType = AuthType.AUTH_CODE;
+
+        Map<String, String> uris = getURIParams(authType);
+        String jsonRequest = "{\"grant_type\":\"authorization_code\","
+                + "\"client_id\":\"" + CLIENT_ID + "\","
+                + "\"code\":\"" + authorizationCode + "\","
+                + "\"redirect_uri\":\"" + uris.get("redirect_uri") + "\"}";
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI(buildHostedUIURL(authType)))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(jsonRequest))
+                .build();
+
+        HttpResponse<String> response = this.httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+        String jsonResponse = response.body();
+
+        return UserSessionResponseDTO.fromJSONString(jsonResponse);
     }
 
     public Boolean updateUser(UpdateUserDTO updateUserDTO) {
@@ -80,106 +107,55 @@ public class UserService {
     }
 
     public Boolean changePassword(ChangePasswordDTO changePasswordDTO) {
-            ChangePasswordRequest changePasswordRequest = ChangePasswordRequest.builder()
-                    .accessToken(changePasswordDTO.getAccessToken())
-                    .previousPassword(changePasswordDTO.getOldPassword())
-                    .proposedPassword(changePasswordDTO.getNewPassword())
-                    .build();
+        ChangePasswordRequest changePasswordRequest = ChangePasswordRequest.builder()
+                .accessToken(changePasswordDTO.getAccessToken())
+                .previousPassword(changePasswordDTO.getOldPassword())
+                .proposedPassword(changePasswordDTO.getNewPassword())
+                .build();
 
-            this.cognitoClient.changePassword(changePasswordRequest);
+        this.cognitoClient.changePassword(changePasswordRequest);
 
-            return true;
+        return true;
     }
 
-    public Boolean deleteUser(String username) {
-            AdminDeleteUserRequest deleteUserRequest = AdminDeleteUserRequest.builder()
-                    .userPoolId(USER_POOL_ID)
-                    .username(username)
-                    .build();
+    public Boolean deleteUser(String accessToken) {
+        DeleteUserRequest deleteUserRequest = DeleteUserRequest.builder()
+                .accessToken(accessToken)
+                .build();
 
-            this.cognitoClient.adminDeleteUser(deleteUserRequest);
+        this.cognitoClient.deleteUser(deleteUserRequest);
 
-            return true;
+        return true;
     }
 
     public Boolean verifyAccessToken(String accessToken) {
-            GetUserRequest getUserRequest = GetUserRequest.builder()
-                    .accessToken(accessToken)
-                    .build();
+        GetUserRequest getUserRequest = GetUserRequest.builder()
+                .accessToken(accessToken)
+                .build();
 
-            this.cognitoClient.getUser(getUserRequest);
+        this.cognitoClient.getUser(getUserRequest);
 
-            return true;
+        return true;
     }
 
-    public UserResponseDTO user(String accessToken) {
-            GetUserRequest getUserRequest = GetUserRequest.builder()
-                    .accessToken(accessToken)
-                    .build();
+    public UserResponseDTO getUser(String accessToken) {
+        GetUserRequest getUserRequest = GetUserRequest.builder()
+                .accessToken(accessToken)
+                .build();
 
-            GetUserResponse getUserResponse = this.cognitoClient.getUser(getUserRequest);
+        GetUserResponse getUserResponse = this.cognitoClient.getUser(getUserRequest);
 
-            UserResponseDTO user = getUserResponseDTO(getUserResponse);
-
-            return user;
+        return UserResponseDTO.fromGetUserResponse(getUserResponse);
     }
 
-    public String userId(String accessToken) {
-            GetUserRequest getUserRequest = GetUserRequest.builder()
-                    .accessToken(accessToken)
-                    .build();
+    public String getUserId(String accessToken) {
+        GetUserRequest getUserRequest = GetUserRequest.builder()
+                .accessToken(accessToken)
+                .build();
 
-            GetUserResponse getUserResponse = this.cognitoClient.getUser(getUserRequest);
+        GetUserResponse getUserResponse = this.cognitoClient.getUser(getUserRequest);
 
-            return getUserResponse.username();
-    }
-
-    public String getAccessToken(AccessTokenDTO accessTokenDTO) {
-            Map<String, String> authParams = new HashMap<>();
-            authParams.put("USERNAME", accessTokenDTO.getUsername());
-            authParams.put("PASSWORD", accessTokenDTO.getPassword());
-
-            AdminInitiateAuthRequest authRequest = AdminInitiateAuthRequest.builder()
-                    .userPoolId(USER_POOL_ID)
-                    .clientId(CLIENT_ID)
-                    .authFlow(AuthFlowType.ADMIN_NO_SRP_AUTH)
-                    .authParameters(authParams)
-                    .build();
-
-            AdminInitiateAuthResponse authResponse = this.cognitoClient.adminInitiateAuth(authRequest);
-
-
-            return authResponse.authenticationResult().accessToken();
-    }
-
-    @NotNull
-    private static UserResponseDTO getUserResponseDTO(GetUserResponse getUserResponse) {
-        List<AttributeType> userAttributes = getUserResponse.userAttributes();
-
-        String name = "";
-        String email = "";
-        String phoneNumber = "";
-
-        for (AttributeType attr : userAttributes) {
-            switch (attr.name()) {
-                case "name":
-                    name = attr.value();
-                    break;
-                case "email":
-                    email = attr.value();
-                    break;
-                case "phone_number":
-                    phoneNumber = attr.value();
-                    break;
-            }
-        }
-
-        return new UserResponseDTO(
-                getUserResponse.username(),
-                email,
-                name,
-                phoneNumber
-        );
+        return getUserResponse.username();
     }
 
     private Map<String, String> getURIParams(AuthType authType) {
@@ -191,7 +167,7 @@ public class UserService {
         DescribeUserPoolClientResponse response = this.cognitoClient.describeUserPoolClient(request);
 
         Map<String, String> uris = new HashMap<>();
-        if(authType == AuthType.LOGOUT && response.userPoolClient().hasLogoutURLs()) {
+        if (authType == AuthType.LOGOUT && response.userPoolClient().hasLogoutURLs()) {
             uris.put("logout_uri", response.userPoolClient().logoutURLs().get(0));
         }
         uris.put("redirect_uri", response.userPoolClient().callbackURLs().get(0));
@@ -200,27 +176,31 @@ public class UserService {
     }
 
     private String buildHostedUIURL(AuthType authType) throws URISyntaxException {
-        if(HOSTED_UI_BASE_URL == null || CLIENT_ID == null) {
+        if (HOSTED_UI_BASE_URL == null || CLIENT_ID == null) {
             throw new URISyntaxException("HOSTED_UI_BASE_URL or CLIENT_ID", "Missing environment variables");
         }
 
         String domain = this.getDomain();
-        Map<String, String> uris = this.getURIParams(authType);
 
         String baseUrl = HOSTED_UI_BASE_URL.replace("<DOMAIN>", domain) + "/" + authType.toPath();
 
         Map<String, String> params = new HashMap<>();
-        params.put("client_id", CLIENT_ID);
-        params.put("response_type", "code");
-        params.put("scope", "email+openid+phone");
-        params.putAll(uris);
+        if (authType != AuthType.AUTH_CODE) {
+            params.put("client_id", CLIENT_ID);
+            params.put("response_type", "code");
+            params.put("scope", "email+openid+phone");
+
+            Map<String, String> uris = this.getURIParams(authType);
+            params.putAll(uris);
+        }
 
         URI uri = getURI(baseUrl, params);
         return uri.toString();
     }
 
     private String getDomain() {
-        DescribeUserPoolRequest describeUserPoolRequest = DescribeUserPoolRequest.builder().userPoolId(USER_POOL_ID).build();
+        DescribeUserPoolRequest describeUserPoolRequest = DescribeUserPoolRequest.builder().userPoolId(USER_POOL_ID)
+                .build();
         UserPoolType res = this.cognitoClient.describeUserPool(describeUserPoolRequest).userPool();
         return res.domain();
     }

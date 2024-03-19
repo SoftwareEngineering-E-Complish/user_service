@@ -3,7 +3,8 @@ package com.ecomplish.user_service.model._enum;
 public enum AuthType {
     LOGIN,
     SIGNUP,
-    LOGOUT;
+    LOGOUT,
+    AUTH_CODE;
 
     public String toPath() {
         switch (this) {
@@ -13,6 +14,8 @@ public enum AuthType {
                 return "signup";
             case LOGOUT:
                 return "logout";
+            case AUTH_CODE:
+                return "oauth2/token";
         }
         return "";
     }
