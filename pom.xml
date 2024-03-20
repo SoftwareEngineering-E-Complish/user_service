@@ -24,10 +24,10 @@
 		<sonar.projectKey>SoftwareEngineering-E-Complish_user_service</sonar.projectKey>
   		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 		<sonar.java.binaries>target/classes</sonar.java.binaries>
+		<sonar.exclusions>src/main/java/com/ecomplish/user_service/model/*</sonar.exclusions>
 		<src.dir>src/main/java</src.dir>
 		<sonar.sources>pom.xml,src/main/java</sonar.sources>
 		<sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
-		<sonar.jacoco.reportPath>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPath>
 		<sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
 		<sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
 		<sonar.language>java</sonar.language>
