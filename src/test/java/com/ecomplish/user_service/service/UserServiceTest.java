@@ -3,6 +3,7 @@ package com.ecomplish.user_service.service;
 import com.ecomplish.user_service.model.DTO.ChangePasswordDTO;
 import com.ecomplish.user_service.model.DTO.UpdateUserDTO;
 import com.ecomplish.user_service.model.DTO.UserResponseDTO;
+import com.ecomplish.user_service.model.DTO.UserSessionResponseDTO;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -224,10 +225,72 @@ public class UserServiceTest {
 
     @Test
     public void testSessionSuccess() throws IOException, InterruptedException {
+        DescribeUserPoolResponse describeUserPoolResponse = Mockito.mock(DescribeUserPoolResponse.class);
+        UserPoolType userPoolType = Mockito.mock(UserPoolType.class);
+        Mockito.when(userPoolType.domain()).thenReturn("e-complish");
+        Mockito.when(describeUserPoolResponse.userPool()).thenReturn(userPoolType);
+        Mockito.when(userService.cognitoClient.describeUserPool(Mockito.any(DescribeUserPoolRequest.class)))
+                .thenReturn(describeUserPoolResponse);
+
+        DescribeUserPoolClientResponse describeUserPoolClientResponse = Mockito
+                .mock(DescribeUserPoolClientResponse.class);
+        UserPoolClientType userPoolClientType = Mockito.mock(UserPoolClientType.class);
+        Mockito.when(userPoolClientType.hasLogoutURLs()).thenReturn(true);
+        Mockito.when(userPoolClientType.logoutURLs()).thenReturn(List.of("http://localhost:8000"));
+        Mockito.when(userPoolClientType.callbackURLs()).thenReturn(List.of("http://localhost:8000"));
+        Mockito.when(describeUserPoolClientResponse.userPoolClient()).thenReturn(userPoolClientType);
+        Mockito.when(userService.cognitoClient.describeUserPoolClient((DescribeUserPoolClientRequest) any()))
+                .thenReturn(describeUserPoolClientResponse);
+
         HttpResponse httpResponse = Mockito.mock(HttpResponse.class);
-        Mockito.when(httpResponse.body()).thenReturn("{\"test\":\"test\"}");
+        Mockito.when(httpResponse.body()).thenReturn("{" +
+                "\"access_token\":\"access_token\"," +
+                "\"refresh_token\":\"refresh_token\"," +
+                "\"id_token\":\"id_token\"," +
+                "\"expires_in\":3600" +
+                "}");
         Mockito.when(userService.httpClient.send(any(), any())).thenReturn(httpResponse);
 
+        UserSessionResponseDTO userSessionResponseDTO;
+        try{
+            userSessionResponseDTO = userService.getSession("authorizationCode");
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    public void testSessionFailure() throws IOException, InterruptedException {
+        DescribeUserPoolResponse describeUserPoolResponse = Mockito.mock(DescribeUserPoolResponse.class);
+        UserPoolType userPoolType = Mockito.mock(UserPoolType.class);
+        Mockito.when(userPoolType.domain()).thenReturn("e-complish");
+        Mockito.when(describeUserPoolResponse.userPool()).thenReturn(userPoolType);
+        Mockito.when(userService.cognitoClient.describeUserPool(Mockito.any(DescribeUserPoolRequest.class)))
+                .thenReturn(describeUserPoolResponse);
+
+        DescribeUserPoolClientResponse describeUserPoolClientResponse = Mockito
+                .mock(DescribeUserPoolClientResponse.class);
+        UserPoolClientType userPoolClientType = Mockito.mock(UserPoolClientType.class);
+        Mockito.when(userPoolClientType.hasLogoutURLs()).thenReturn(true);
+        Mockito.when(userPoolClientType.logoutURLs()).thenReturn(List.of("http://localhost:8000"));
+        Mockito.when(userPoolClientType.callbackURLs()).thenReturn(List.of("http://localhost:8000"));
+        Mockito.when(describeUserPoolClientResponse.userPoolClient()).thenReturn(userPoolClientType);
+        Mockito.when(userService.cognitoClient.describeUserPoolClient((DescribeUserPoolClientRequest) any()))
+                .thenReturn(describeUserPoolClientResponse);
+        
+        HttpResponse httpResponse = Mockito.mock(HttpResponse.class);
+        Mockito.when(httpResponse.body()).thenReturn("{" +
+                "\"error\":\"invalid_grant\"," +
+                "\"error_description\":\"Invalid authorization code\"" +
+                "}");
+        Mockito.when(userService.httpClient.send(any(), any())).thenReturn(httpResponse);
+        
+        UserSessionResponseDTO userSessionResponseDTO;
+        try{
+            userSessionResponseDTO = userService.getSession("authorizationCode");
+        } catch (URISyntaxException | IOException | InterruptedException e) {
+            assertTrue(true);
+        }
     }
 
     @Test
@@ -320,9 +383,9 @@ public class UserServiceTest {
     @Test
     public void testDeleteUserSuccess() {
         // Stubbing the adminDeleteUser method
-        AdminDeleteUserResponse adminDeleteUserResponse = Mockito.mock(AdminDeleteUserResponse.class);
-        Mockito.when(userService.cognitoClient.adminDeleteUser((AdminDeleteUserRequest) any()))
-                .thenReturn(adminDeleteUserResponse);
+        DeleteUserResponse deleteUserResponse = Mockito.mock(DeleteUserResponse.class);
+        Mockito.when(userService.cognitoClient.deleteUser((DeleteUserRequest) any()))
+                .thenReturn(deleteUserResponse);
 
         // Invocation of deleteUser method
         Boolean deleteUser;
@@ -336,14 +399,14 @@ public class UserServiceTest {
         }
 
         // Verifying that adminDeleteUser was invoked
-        Mockito.verify(userService.cognitoClient).adminDeleteUser(Mockito.any(AdminDeleteUserRequest.class));
+        Mockito.verify(userService.cognitoClient).deleteUser(Mockito.any(DeleteUserRequest.class));
     }
 
     @Test
     public void testDeleteUserFailure() {
         // Throw an exception when adminDeleteUser is called
         Mockito.doThrow(ResourceNotFoundException.class).when(userService.cognitoClient)
-                .adminDeleteUser((AdminDeleteUserRequest) any());
+                .deleteUser((DeleteUserRequest) any());
 
         // Invocation of deleteUser method
         Boolean deleteUser;

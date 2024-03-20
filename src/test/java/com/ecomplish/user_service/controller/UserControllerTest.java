@@ -96,9 +96,9 @@ public class UserControllerTest {
 
     @Test
     public void testDeleteUser() throws Exception {
-        when(this.userController.userService.deleteUser("username")).thenReturn(true);
-        mockMvc.perform(MockMvcRequestBuilders.post("/deleteUser")
-                .param("username", "username"))
+        when(this.userController.userService.deleteUser("accessToken")).thenReturn(true);
+        mockMvc.perform(MockMvcRequestBuilders.get("/deleteUser")
+                .param("accessToken", "accessToken"))
                 .andExpect(status().isOk());
     }
 
