@@ -97,6 +97,14 @@ The base URL for all endpoints is: `http://localhost:8005`
 - Response: Returns the logout URL as a string.
 - Throws: `URISyntaxException` if there is an issue with the URI syntax.
 
+### Get Session
+- URL: `/session`
+- Method: `GET`
+- Description: Retrieves the user's session.
+- Request Parameter: `authorizationCode` (String)
+- Response: Returns user session in the form of `UserSessionResponseDTO` (Fields: accessToken, idToken, refreshToken, expiresIn).
+- Throws: `URISyntaxException`, `IOException`, `InterruptedException`.
+
 ### Update User
 - URL: `/updateUser`
 - Method: `POST`
@@ -113,9 +121,9 @@ The base URL for all endpoints is: `http://localhost:8005`
 
 ### Delete User
 - URL: `/deleteUser`
-- Method: `POST`
+- Method: `GET`
 - Description: Deletes a user.
-- Request Parameter: `username` (String)
+- Request Parameter: `accessToken` (String)
 - Response: Returns `true` if the user is successfully deleted; otherwise, `false`.
 
 ### Verify Access Token

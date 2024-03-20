@@ -1,9 +1,6 @@
 package com.ecomplish.user_service.controller;
 
-import com.ecomplish.user_service.model.DTO.AccessTokenDTO;
-import com.ecomplish.user_service.model.DTO.ChangePasswordDTO;
-import com.ecomplish.user_service.model.DTO.UpdateUserDTO;
-import com.ecomplish.user_service.model.UserResponseDTO;
+import com.ecomplish.user_service.model.DTO.*;
 import com.ecomplish.user_service.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -67,11 +64,24 @@ public class UserControllerTest {
     }
 
     @Test
+    public void testSession() throws Exception {
+
+        when(this.userController.userService.getSession("accessToken")).thenReturn(new UserSessionResponseDTO(
+                "accessToken",
+                "idToken",
+                "refreshToken",
+                3600));
+        mockMvc.perform(MockMvcRequestBuilders.get("/session").param("accessToken", "accessToken"))
+                .andExpect(status().isOk())
+                .andReturn();
+    }
+
+    @Test
     public void testUpdateUser() throws Exception {
         when(this.userController.userService.updateUser(any(UpdateUserDTO.class))).thenReturn(true);
         mockMvc.perform(MockMvcRequestBuilders.post("/updateUser")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
                 .andExpect(status().isOk());
     }
 
@@ -79,16 +89,16 @@ public class UserControllerTest {
     public void testChangePassword() throws Exception {
         when(this.userController.userService.changePassword(any(ChangePasswordDTO.class))).thenReturn(true);
         mockMvc.perform(MockMvcRequestBuilders.post("/changePassword")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
                 .andExpect(status().isOk());
     }
 
     @Test
     public void testDeleteUser() throws Exception {
-        when(this.userController.userService.deleteUser("username")).thenReturn(true);
-        mockMvc.perform(MockMvcRequestBuilders.post("/deleteUser")
-                        .param("username", "username"))
+        when(this.userController.userService.deleteUser("accessToken")).thenReturn(true);
+        mockMvc.perform(MockMvcRequestBuilders.get("/deleteUser")
+                .param("accessToken", "accessToken"))
                 .andExpect(status().isOk());
     }
 
@@ -96,38 +106,27 @@ public class UserControllerTest {
     public void testVerifyAccessToken() throws Exception {
         when(this.userController.userService.verifyAccessToken("accessToken")).thenReturn(true);
         mockMvc.perform(MockMvcRequestBuilders.get("/verifyAccessToken")
-                        .param("accessToken", "accessToken"))
+                .param("accessToken", "accessToken"))
                 .andExpect(status().isOk());
     }
 
     @Test
     public void testUser() throws Exception {
-        when(this.userController.userService.user("accessToken")).thenReturn(new UserResponseDTO(
-            "testuser1",
-            "test@example.com",
-            "name",
-            "+123456"
-        ));
+        when(this.userController.userService.getUser("accessToken")).thenReturn(new UserResponseDTO(
+                "testuser1",
+                "test@example.com",
+                "name",
+                "+123456"));
         mockMvc.perform(MockMvcRequestBuilders.get("/user")
-                        .param("accessToken", "accessToken"))
+                .param("accessToken", "accessToken"))
                 .andExpect(status().isOk());
     }
 
     @Test
     public void testUserId() throws Exception {
-        when(this.userController.userService.userId("accessToken")).thenReturn("userId");
+        when(this.userController.userService.getUserId("accessToken")).thenReturn("userId");
         mockMvc.perform(MockMvcRequestBuilders.get("/userId")
-                        .param("accessToken", "accessToken"))
+                .param("accessToken", "accessToken"))
                 .andExpect(status().isOk());
     }
-
-    @Test
-    public void testGetAccessToken() throws Exception {
-        when(this.userController.userService.getAccessToken(any(AccessTokenDTO.class))).thenReturn("accessToken");
-        mockMvc.perform(MockMvcRequestBuilders.post("/getAccessToken")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
-                .andExpect(status().isOk());
-    }
-
 }
