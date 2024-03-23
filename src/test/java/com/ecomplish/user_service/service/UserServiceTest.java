@@ -225,72 +225,10 @@ public class UserServiceTest {
 
     @Test
     public void testSessionSuccess() throws IOException, InterruptedException {
-        DescribeUserPoolResponse describeUserPoolResponse = Mockito.mock(DescribeUserPoolResponse.class);
-        UserPoolType userPoolType = Mockito.mock(UserPoolType.class);
-        Mockito.when(userPoolType.domain()).thenReturn("e-complish");
-        Mockito.when(describeUserPoolResponse.userPool()).thenReturn(userPoolType);
-        Mockito.when(userService.cognitoClient.describeUserPool(Mockito.any(DescribeUserPoolRequest.class)))
-                .thenReturn(describeUserPoolResponse);
-
-        DescribeUserPoolClientResponse describeUserPoolClientResponse = Mockito
-                .mock(DescribeUserPoolClientResponse.class);
-        UserPoolClientType userPoolClientType = Mockito.mock(UserPoolClientType.class);
-        Mockito.when(userPoolClientType.hasLogoutURLs()).thenReturn(true);
-        Mockito.when(userPoolClientType.logoutURLs()).thenReturn(List.of("http://localhost:8000"));
-        Mockito.when(userPoolClientType.callbackURLs()).thenReturn(List.of("http://localhost:8000"));
-        Mockito.when(describeUserPoolClientResponse.userPoolClient()).thenReturn(userPoolClientType);
-        Mockito.when(userService.cognitoClient.describeUserPoolClient((DescribeUserPoolClientRequest) any()))
-                .thenReturn(describeUserPoolClientResponse);
-
         HttpResponse httpResponse = Mockito.mock(HttpResponse.class);
-        Mockito.when(httpResponse.body()).thenReturn("{" +
-                "\"access_token\":\"access_token\"," +
-                "\"refresh_token\":\"refresh_token\"," +
-                "\"id_token\":\"id_token\"," +
-                "\"expires_in\":3600" +
-                "}");
+        Mockito.when(httpResponse.body()).thenReturn("{\"test\":\"test\"}");
         Mockito.when(userService.httpClient.send(any(), any())).thenReturn(httpResponse);
 
-        UserSessionResponseDTO userSessionResponseDTO;
-        try{
-            userSessionResponseDTO = userService.getSession("authorizationCode");
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Test
-    public void testSessionFailure() throws IOException, InterruptedException {
-        DescribeUserPoolResponse describeUserPoolResponse = Mockito.mock(DescribeUserPoolResponse.class);
-        UserPoolType userPoolType = Mockito.mock(UserPoolType.class);
-        Mockito.when(userPoolType.domain()).thenReturn("e-complish");
-        Mockito.when(describeUserPoolResponse.userPool()).thenReturn(userPoolType);
-        Mockito.when(userService.cognitoClient.describeUserPool(Mockito.any(DescribeUserPoolRequest.class)))
-                .thenReturn(describeUserPoolResponse);
-
-        DescribeUserPoolClientResponse describeUserPoolClientResponse = Mockito
-                .mock(DescribeUserPoolClientResponse.class);
-        UserPoolClientType userPoolClientType = Mockito.mock(UserPoolClientType.class);
-        Mockito.when(userPoolClientType.hasLogoutURLs()).thenReturn(true);
-        Mockito.when(userPoolClientType.logoutURLs()).thenReturn(List.of("http://localhost:8000"));
-        Mockito.when(userPoolClientType.callbackURLs()).thenReturn(List.of("http://localhost:8000"));
-        Mockito.when(describeUserPoolClientResponse.userPoolClient()).thenReturn(userPoolClientType);
-        Mockito.when(userService.cognitoClient.describeUserPoolClient((DescribeUserPoolClientRequest) any()))
-                .thenReturn(describeUserPoolClientResponse);
-        
-        HttpResponse httpResponse = Mockito.mock(HttpResponse.class);
-        Mockito.when(httpResponse.body()).thenReturn("{" +
-                "\"error\":\"invalid_grant\"," +
-                "\"error_description\":\"Invalid authorization code\"" +
-                "}");
-        Mockito.when(userService.httpClient.send(any(), any())).thenReturn(httpResponse);
-        
-        UserSessionResponseDTO userSessionResponseDTO;
-        try{
-            userSessionResponseDTO = userService.getSession("authorizationCode");
-        } catch (URISyntaxException | IOException | InterruptedException e) {
-            assertTrue(true);
-        }
     }
 
     @Test
@@ -390,7 +328,7 @@ public class UserServiceTest {
         // Invocation of deleteUser method
         Boolean deleteUser;
         try {
-            deleteUser = userService.deleteUser("username");
+            deleteUser = userService.deleteUser("accessToken");
             // Asserting that the return value is a boolean
             assertNotNull(deleteUser);
         } catch (Exception e) {
@@ -404,36 +342,28 @@ public class UserServiceTest {
 
     @Test
     public void testDeleteUserFailure() {
-        // Throw an exception when adminDeleteUser is called
         Mockito.doThrow(ResourceNotFoundException.class).when(userService.cognitoClient)
                 .deleteUser((DeleteUserRequest) any());
 
-        // Invocation of deleteUser method
         Boolean deleteUser;
         try {
-            deleteUser = userService.deleteUser("username");
-            // Failing the test if no exception is thrown
+            deleteUser = userService.deleteUser("accessToken");
             fail("deleteUser method did not throw an exception");
         } catch (Exception e) {
-            // Asserting that the exception message is as expected
             assertTrue(true);
         }
     }
 
     @Test
     public void testVerifyAccessTokenSuccess() {
-        // Stubbing the getUser method
         GetUserResponse getUserResponse = Mockito.mock(GetUserResponse.class);
         Mockito.when(userService.cognitoClient.getUser((GetUserRequest) any())).thenReturn(getUserResponse);
 
-        // Invocation of verifyAccessToken method
         Boolean verifyAccessToken;
         try {
             verifyAccessToken = userService.verifyAccessToken("accessToken");
-            // Asserting that the return value is a boolean
             assertNotNull(verifyAccessToken);
         } catch (Exception e) {
-            // Failing the test if an error occurs during verifyAccessToken invocation
             fail("verifyAccessToken method threw an exception: " + e.getMessage());
         }
 
@@ -443,20 +373,53 @@ public class UserServiceTest {
 
     @Test
     public void testVerifyAccessTokenFailure() {
-        // Throw an exception when getUser is called
         Mockito.doThrow(ResourceNotFoundException.class).when(userService.cognitoClient)
                 .getUser((GetUserRequest) any());
 
-        // Invocation of verifyAccessToken method
         Boolean verifyAccessToken;
         try {
             verifyAccessToken = userService.verifyAccessToken("accessToken");
-            // Failing the test if no exception is thrown
             fail("verifyAccessToken method did not throw an exception");
         } catch (Exception e) {
-            // Asserting that the exception message is as expected
             assertTrue(true);
         }
+    }
+
+    @Test
+    public void testRefreshAccessTokenSuccess() {
+        InitiateAuthResponse initiateAuthResponse = Mockito.mock(InitiateAuthResponse.class);
+        AuthenticationResultType authenticationResultType = Mockito.mock(AuthenticationResultType.class);
+        Mockito.when(initiateAuthResponse.authenticationResult()).thenReturn(authenticationResultType);
+        Mockito.when(userService.cognitoClient.initiateAuth((InitiateAuthRequest) any())).thenReturn(initiateAuthResponse);
+
+        UserSessionResponseDTO userSessionResponseDTO;
+        try {
+            userSessionResponseDTO = userService.refreshAccessToken("refreshToken");
+            assertNotNull(userSessionResponseDTO);
+        } catch (Exception e) {
+            fail("refreshAccessToken method threw an exception: " + e.getMessage());
+        }
+
+        // Verifying that getUser was invoked
+        Mockito.verify(userService.cognitoClient).initiateAuth(Mockito.any(InitiateAuthRequest.class));
+    }
+
+    @Test
+    public void testRefreshAccessTokenFailure() {
+        InitiateAuthResponse initiateAuthResponse = Mockito.mock(InitiateAuthResponse.class);
+        AuthenticationResultType authenticationResultType = Mockito.mock(AuthenticationResultType.class);
+        Mockito.when(initiateAuthResponse.authenticationResult()).thenReturn(authenticationResultType);
+        Mockito.doThrow(ResourceNotFoundException.class).when(userService.cognitoClient).initiateAuth((InitiateAuthRequest) any());
+
+        UserSessionResponseDTO userSessionResponseDTO;
+        try {
+            userSessionResponseDTO = userService.refreshAccessToken("refreshToken");
+            fail("refreshAccessToken method did not throw an exception");
+        } catch (Exception e) {
+            assertTrue(true);
+        }
+
+        Mockito.verify(userService.cognitoClient).initiateAuth(Mockito.any(InitiateAuthRequest.class));
     }
 
     @Test

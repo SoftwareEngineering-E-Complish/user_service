@@ -102,7 +102,7 @@ The base URL for all endpoints is: `http://localhost:8005`
 - Method: `GET`
 - Description: Retrieves the user's session.
 - Request Parameter: `authorizationCode` (String)
-- Response: Returns user session in the form of `UserSessionResponseDTO` (Fields: accessToken, idToken, refreshToken, expiresIn).
+- Response: Returns user session in the form of `UserSessionResponseDTO` (Fields: accessToken, tokenType, idToken, refreshToken, expiresIn).
 - Throws: `URISyntaxException`, `IOException`, `InterruptedException`.
 
 ### Update User
@@ -132,6 +132,13 @@ The base URL for all endpoints is: `http://localhost:8005`
 - Description: Verifies the validity of an access token.
 - Request Parameter: `accessToken` (String)
 - Response: Returns `true` if the access token is valid; otherwise, `false`.
+
+### Refresh Access Token
+- URL: `/refreshAccessToken`
+- Method: `GET`
+- Description: Refreshes the access token and retrieves new user session.
+- Request Parameter: `refreshToken` (String)
+- Response: Returns user session in the form of `UserSessionResponseDTO` (Fields: accessToken, tokenType, idToken, refreshToken, expiresIn).
 
 ### Get User Details
 - URL: `/user`

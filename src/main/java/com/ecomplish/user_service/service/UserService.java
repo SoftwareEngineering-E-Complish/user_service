@@ -2,6 +2,8 @@ package com.ecomplish.user_service.service;
 
 import com.ecomplish.user_service.model.DTO.*;
 import com.ecomplish.user_service.model._enum.AuthType;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
@@ -11,6 +13,8 @@ import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,22 +68,26 @@ public class UserService {
         AuthType authType = AuthType.AUTH_CODE;
 
         Map<String, String> uris = getURIParams(authType);
-        String jsonRequest = "{\"grant_type\":\"authorization_code\","
-                + "\"client_id\":\"" + CLIENT_ID + "\","
-                + "\"code\":\"" + authorizationCode + "\","
-                + "\"redirect_uri\":\"" + uris.get("redirect_uri") + "\"}";
+
+        String requestBody = "grant_type=" + URLEncoder.encode("authorization_code", StandardCharsets.UTF_8) +
+                "&client_id=" + URLEncoder.encode(CLIENT_ID, StandardCharsets.UTF_8) +
+                "&code=" + URLEncoder.encode(authorizationCode, StandardCharsets.UTF_8) +
+                "&redirect_uri=" + URLEncoder.encode(uris.get("redirect_uri"), StandardCharsets.UTF_8);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(buildHostedUIURL(authType)))
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(jsonRequest))
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                 .build();
 
         HttpResponse<String> response = this.httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-        String jsonResponse = response.body();
-
-        return UserSessionResponseDTO.fromJSONString(jsonResponse);
+        if (response.statusCode() == 200) {
+            String jsonResponse = response.body();
+            return UserSessionResponseDTO.fromJSONString(jsonResponse);
+        } else {
+            throw new IOException("Failed to get user session. HTTP status code: " + response.statusCode());
+        }
     }
 
     public Boolean updateUser(UpdateUserDTO updateUserDTO) {
@@ -136,6 +144,23 @@ public class UserService {
         this.cognitoClient.getUser(getUserRequest);
 
         return true;
+    }
+
+    public UserSessionResponseDTO refreshAccessToken(String refreshToken) {
+        Map<String, String> params = new HashMap<>();
+        params.put("REFRESH_TOKEN", refreshToken);
+
+        InitiateAuthRequest initiateAuthRequest = InitiateAuthRequest.builder()
+                .clientId(CLIENT_ID)
+                .authFlow("REFRESH_TOKEN_AUTH")
+                .authParameters(params)
+                .build();
+
+        InitiateAuthResponse initiateAuthResponse = this.cognitoClient.initiateAuth(initiateAuthRequest);
+
+        System.out.println();
+
+        return UserSessionResponseDTO.fromAuthenticationResultType(initiateAuthResponse.authenticationResult());
     }
 
     public UserResponseDTO getUser(String accessToken) {

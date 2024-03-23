@@ -9,6 +9,8 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
@@ -65,13 +67,14 @@ public class UserControllerTest {
 
     @Test
     public void testSession() throws Exception {
-
         when(this.userController.userService.getSession("accessToken")).thenReturn(new UserSessionResponseDTO(
                 "accessToken",
+                "tokenType",
                 "idToken",
                 "refreshToken",
                 3600));
-        mockMvc.perform(MockMvcRequestBuilders.get("/session").param("accessToken", "accessToken"))
+        mockMvc.perform(MockMvcRequestBuilders.get("/session")
+                .param("accessToken", "accessToken"))
                 .andExpect(status().isOk())
                 .andReturn();
     }

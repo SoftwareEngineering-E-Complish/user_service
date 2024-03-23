@@ -57,3 +57,5 @@ coverage/
 .settings/
 
 **/*.DS_Store
+
+.env

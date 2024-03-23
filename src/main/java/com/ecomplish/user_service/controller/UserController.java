@@ -55,6 +55,10 @@ public class UserController {
     public Boolean verifyAccessToken(@RequestParam String accessToken) {
         return userService.verifyAccessToken(accessToken);
     }
+    @GetMapping("/refreshAccessToken")
+    public UserSessionResponseDTO refreshAccessToken(@RequestParam String refreshToken) {
+        return userService.refreshAccessToken(refreshToken);
+    }
 
     @GetMapping("/user")
     public UserResponseDTO user(@RequestParam String accessToken) {
