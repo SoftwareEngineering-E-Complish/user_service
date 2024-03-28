@@ -2,11 +2,16 @@ package com.ecomplish.user_service.controller;
 
 import com.ecomplish.user_service.model.DTO.*;
 import com.ecomplish.user_service.service.UserService;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.context.annotation.Bean;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 public class UserController {
 

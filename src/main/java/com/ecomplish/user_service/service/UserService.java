@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.auth.credentials.*;
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cognitoidentity.CognitoIdentityClient;
 import software.amazon.awssdk.services.cognitoidentity.model.CognitoIdentityProvider;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
@@ -45,6 +46,7 @@ public class UserService {
 
             this.cognitoClient = CognitoIdentityProviderClient.builder()
                     .credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
+                    .region(Region.of(region))
                     .build();
         }
         USER_POOL_ID = System.getenv("COGNITO_USER_POOL_ID");
@@ -221,7 +223,7 @@ public class UserService {
         if (authType != AuthType.AUTH_CODE) {
             params.put("client_id", CLIENT_ID);
             params.put("response_type", "code");
-            params.put("scope", "email+openid+phone");
+            params.put("scope", "email+openid+phone+profile+aws.cognito.signin.user.admin");
 
             Map<String, String> uris = this.getURIParams(authType);
             params.putAll(uris);
