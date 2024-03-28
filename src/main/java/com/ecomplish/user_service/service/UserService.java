@@ -5,9 +5,11 @@ import com.ecomplish.user_service.model._enum.AuthType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.stereotype.Service;
-import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
-import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.*;
+import software.amazon.awssdk.services.cognitoidentity.CognitoIdentityClient;
+import software.amazon.awssdk.services.cognitoidentity.model.CognitoIdentityProvider;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
+import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClientBuilder;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
 
 import java.io.IOException;
@@ -35,17 +37,19 @@ public class UserService {
     public HttpClient httpClient;
 
     public UserService() {
-        String region = System.getenv("AWS_REGION");
+        String accessKeyId = System.getenv("USER_SERVICE_AWS_ACCESS_KEY_ID");
+        String secretAccessKey = System.getenv("USER_SERVICE_AWS_SECRET_ACCESS_KEY");
+        String region = System.getenv("USER_SERVICE_AWS_REGION");
         if (region != null && !region.isBlank()) {
-            AwsCredentialsProvider credentialsProvider = DefaultCredentialsProvider.create();
+            AwsBasicCredentials awsCredentials = AwsBasicCredentials.create(accessKeyId, secretAccessKey);
 
             this.cognitoClient = CognitoIdentityProviderClient.builder()
-                    .credentialsProvider(credentialsProvider)
+                    .credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
                     .build();
         }
-        USER_POOL_ID = System.getenv("USER_POOL_ID");
-        CLIENT_ID = System.getenv("CLIENT_ID");
-        HOSTED_UI_BASE_URL = System.getenv("HOSTED_UI_BASE_URL");
+        USER_POOL_ID = System.getenv("COGNITO_USER_POOL_ID");
+        CLIENT_ID = System.getenv("COGNITO_CLIENT_ID");
+        HOSTED_UI_BASE_URL = System.getenv("COGNITO_HOSTED_UI_BASE_URL");
 
         this.httpClient = HttpClient.newHttpClient();
     }
@@ -137,13 +141,17 @@ public class UserService {
     }
 
     public Boolean verifyAccessToken(String accessToken) {
-        GetUserRequest getUserRequest = GetUserRequest.builder()
-                .accessToken(accessToken)
-                .build();
+        try {
+            GetUserRequest getUserRequest = GetUserRequest.builder()
+                    .accessToken(accessToken)
+                    .build();
 
-        this.cognitoClient.getUser(getUserRequest);
+            this.cognitoClient.getUser(getUserRequest);
 
-        return true;
+            return true;
+        } catch(Exception e) {
+            return false;
+        }
     }
 
     public UserSessionResponseDTO refreshAccessToken(String refreshToken) {

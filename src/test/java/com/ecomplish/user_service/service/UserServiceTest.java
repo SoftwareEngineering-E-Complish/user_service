@@ -18,6 +18,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.springframework.test.util.AssertionErrors.assertFalse;
 import static org.springframework.test.util.AssertionErrors.fail;
 import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
@@ -379,9 +380,9 @@ public class UserServiceTest {
         Boolean verifyAccessToken;
         try {
             verifyAccessToken = userService.verifyAccessToken("accessToken");
-            fail("verifyAccessToken method did not throw an exception");
+            assertFalse(null , verifyAccessToken);
         } catch (Exception e) {
-            assertTrue(true);
+            fail("verifyAccessToken method threw an exception: " + e.getMessage());
         }
     }
 
