@@ -8,6 +8,7 @@ import software.amazon.awssdk.services.cognitoidentityprovider.model.GetUserResp
 import java.util.List;
 
 @Data
+@NoArgsConstructor
 public class UserResponseDTO {
     private String username;
     private String email;

@@ -1,12 +1,10 @@
 package com.ecomplish.user_service.controller;
 
 import com.ecomplish.user_service.model.DTO.*;
+import com.ecomplish.user_service.service.IUserService;
 import com.ecomplish.user_service.service.UserService;
-import org.jetbrains.annotations.NotNull;
-import org.springframework.context.annotation.Bean;
+import com.ecomplish.user_service.service.UserServiceMock;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -15,10 +13,15 @@ import java.net.URISyntaxException;
 @RestController
 public class UserController {
 
-    UserService userService;
+    IUserService userService;
 
     public UserController() {
-        this.userService = new UserService();
+        String accessKeyId = System.getenv("USER_SERVICE_AWS_ACCESS_KEY_ID");
+        if(accessKeyId == null || accessKeyId.isBlank()) {
+            this.userService = new UserServiceMock();
+        } else {
+            this.userService = new UserService();
+        }
     }
 
     @GetMapping("/loginURL")

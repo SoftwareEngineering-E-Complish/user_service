@@ -28,7 +28,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 @Service
-public class UserService {
+public class UserService implements IUserService {
     public String USER_POOL_ID;
     public String CLIENT_ID;
     public String HOSTED_UI_BASE_URL;
@@ -210,6 +210,28 @@ public class UserService {
         return uris;
     }
 
+    private static URI getURI(String baseUrl, Map<String, String> params) throws URISyntaxException {
+        URI uri = new URI(baseUrl);
+        StringBuilder queryString = new StringBuilder();
+        for (Map.Entry<String, String> entry : params.entrySet()) {
+            if (queryString.length() > 0) {
+                queryString.append("&");
+            }
+            queryString.append(entry.getKey());
+            queryString.append("=");
+            queryString.append(entry.getValue());
+        }
+        uri = new URI(uri.getScheme(), uri.getAuthority(), uri.getPath(), queryString.toString(), null);
+        return uri;
+    }
+
+    private String getDomain() {
+        DescribeUserPoolRequest describeUserPoolRequest = DescribeUserPoolRequest.builder().userPoolId(USER_POOL_ID)
+                .build();
+        UserPoolType res = this.cognitoClient.describeUserPool(describeUserPoolRequest).userPool();
+        return res.domain();
+    }
+
     private String buildHostedUIURL(AuthType authType) throws URISyntaxException {
         if (HOSTED_UI_BASE_URL == null || CLIENT_ID == null) {
             throw new URISyntaxException("HOSTED_UI_BASE_URL or CLIENT_ID", "Missing environment variables");
@@ -231,27 +253,5 @@ public class UserService {
 
         URI uri = getURI(baseUrl, params);
         return uri.toString();
-    }
-
-    private String getDomain() {
-        DescribeUserPoolRequest describeUserPoolRequest = DescribeUserPoolRequest.builder().userPoolId(USER_POOL_ID)
-                .build();
-        UserPoolType res = this.cognitoClient.describeUserPool(describeUserPoolRequest).userPool();
-        return res.domain();
-    }
-
-    private static URI getURI(String baseUrl, Map<String, String> params) throws URISyntaxException {
-        URI uri = new URI(baseUrl);
-        StringBuilder queryString = new StringBuilder();
-        for (Map.Entry<String, String> entry : params.entrySet()) {
-            if (queryString.length() > 0) {
-                queryString.append("&");
-            }
-            queryString.append(entry.getKey());
-            queryString.append("=");
-            queryString.append(entry.getValue());
-        }
-        uri = new URI(uri.getScheme(), uri.getAuthority(), uri.getPath(), queryString.toString(), null);
-        return uri;
     }
 }

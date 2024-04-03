@@ -4,6 +4,8 @@ import com.ecomplish.user_service.model.DTO.ChangePasswordDTO;
 import com.ecomplish.user_service.model.DTO.UpdateUserDTO;
 import com.ecomplish.user_service.model.DTO.UserResponseDTO;
 import com.ecomplish.user_service.model.DTO.UserSessionResponseDTO;
+import netscape.javascript.JSObject;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,6 +15,7 @@ import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.net.http.HttpRequest;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -22,15 +25,17 @@ import static org.springframework.test.util.AssertionErrors.assertFalse;
 import static org.springframework.test.util.AssertionErrors.fail;
 import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
+import java.util.Map;
 
 @SpringBootTest
 public class UserServiceTest {
     UserService userService;
 
-    public UserServiceTest() {
+    @BeforeEach
+    public void setUp() {
         CognitoIdentityProviderClient cognitoClient = Mockito.mock(CognitoIdentityProviderClient.class);
         HttpClient httpClient = Mockito.mock(HttpClient.class);
-        this.userService = new UserService();
+        userService = new UserService();
         userService.cognitoClient = cognitoClient;
         userService.httpClient = httpClient;
         userService.USER_POOL_ID = "eu-central-1_123";
@@ -226,10 +231,51 @@ public class UserServiceTest {
 
     @Test
     public void testSessionSuccess() throws IOException, InterruptedException {
+        // Stubbing the describeUserPoolClient method
+        DescribeUserPoolResponse describeUserPoolResponse = Mockito.mock(DescribeUserPoolResponse.class);
+        UserPoolType userPoolType = Mockito.mock(UserPoolType.class);
+        Mockito.when(userPoolType.domain()).thenReturn("e-complish");
+        Mockito.when(describeUserPoolResponse.userPool()).thenReturn(userPoolType);
+        Mockito.when(userService.cognitoClient.describeUserPool(Mockito.any(DescribeUserPoolRequest.class)))
+                .thenReturn(describeUserPoolResponse);
+
+        DescribeUserPoolClientResponse describeUserPoolClientResponse = Mockito
+                .mock(DescribeUserPoolClientResponse.class);
+        UserPoolClientType userPoolClientType = Mockito.mock(UserPoolClientType.class);
+        Mockito.when(userPoolClientType.hasLogoutURLs()).thenReturn(true);
+        Mockito.when(userPoolClientType.logoutURLs()).thenReturn(List.of("http://localhost:8000"));
+        Mockito.when(userPoolClientType.callbackURLs()).thenReturn(List.of("http://localhost:8000"));
+        Mockito.when(describeUserPoolClientResponse.userPoolClient()).thenReturn(userPoolClientType);
+        Mockito.when(userService.cognitoClient.describeUserPoolClient((DescribeUserPoolClientRequest) any()))
+                .thenReturn(describeUserPoolClientResponse);
+
         HttpResponse httpResponse = Mockito.mock(HttpResponse.class);
-        Mockito.when(httpResponse.body()).thenReturn("{\"test\":\"test\"}");
+        Mockito.when(httpResponse.body()).thenReturn("{\"access_token\":\"accessToken\",\"token_type\":\"tokenType\",\"id_token\":\"idToken\",\"refresh_token\":\"refreshToken\",\"expires_in\":3600}");
+        Mockito.when(httpResponse.statusCode()).thenReturn(200);
         Mockito.when(userService.httpClient.send(any(), any())).thenReturn(httpResponse);
 
+        UserSessionResponseDTO userSessionResponseDTO;
+        try {
+            userSessionResponseDTO = userService.getSession("authorizationCode");
+            assertNotNull(userSessionResponseDTO);
+        } catch (Exception e) {
+            fail("getSession method threw an exception: " + e.getMessage());
+        }
+    }
+
+    @Test
+    public void testSessionFailure() {
+        // Throw an exception when describeUserPoolClient is called
+        Mockito.doThrow(ResourceNotFoundException.class).when(userService.cognitoClient)
+                .describeUserPoolClient(Mockito.any(DescribeUserPoolClientRequest.class));
+
+        UserSessionResponseDTO userSessionResponseDTO;
+        try {
+            userSessionResponseDTO = userService.getSession("authorizationCode");
+            fail("getSession method did not throw an exception");
+        } catch (Exception e) {
+            assertTrue(true);
+        }
     }
 
     @Test

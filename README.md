@@ -3,24 +3,20 @@
 This service provides functionality for user management, including user authentication, gathering user details and user account management.
 
 
-## Prerequisites
+## Prerequisites (skip if you want to run the mocked User Manager)
 
 Before you begin, ensure you have met the following requirements:
 
-1. **Configure AWS cli:**
-    
-    ```bash
-    aws configure
-    ```
-
-    Enter your AWS access key, secret key, and region when prompted.
-
-2. **Setup the following AWS Cognito User pool environment varibales:**
+1. **Setup the following environment variables:**
 
     ```bash
-    CLIENT_ID=***
-    USER_POOL_ID=***
-    HOSTED_UI_BASE_URL=***
+    USER_SERVICE_AWS_ACCESS_KEY_ID=***
+    USER_SERVICE_AWS_SECRET_ACCESS_KEY=***
+    USER_SERVICE_AWS_REGION=***
+
+    COGNITO_CLIENT_ID=***
+    COGNITO_USER_POOL_ID=***
+    COGNITO_HOSTED_UI_BASE_URL=***
     ```
     
 
@@ -63,7 +59,11 @@ To run the application in a Docker container, you'll need Docker installed on yo
 2. **Run the Docker container:**
     
     ```bash
+    # real User Manager (AWS Cognito)
     docker run -e AWS_REGION=$AWS_REGION -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY -e CLIENT_ID=$CLIENT_ID -e USER_POOL_ID=$USER_POOL_ID -e HOSTED_UI_BASE_URL=$HOSTED_UI_BASE_URL -p 8080:8080 <your-image-name>
+   
+    # mocked User Manager
+    docker run -p 8080:8080 <your-image-name>
     ```
 
 The application will start within the Docker container and be accessible at http://localhost:8080.
@@ -153,11 +153,4 @@ The base URL for all endpoints is: `http://localhost:8005`
 - Description: Retrieves the user ID.
 - Request Parameter: `accessToken` (String)
 - Response: Returns the user ID as a string.
-
-### Get Access Token
-- URL: `/getAccessToken`
-- Method: `POST`
-- Description: Retrieves an access token.
-- Request Body: `AccessTokenDTO` (Fields: username, password)
-- Response: Returns the access token as a string.
 
