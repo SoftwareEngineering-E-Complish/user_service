@@ -1,133 +1,107 @@
 package com.ecomplish.user_service.controller;
 
-import com.ecomplish.user_service.model.DTO.AccessTokenDTO;
-import com.ecomplish.user_service.model.DTO.ChangePasswordDTO;
-import com.ecomplish.user_service.model.DTO.UpdateUserDTO;
-import com.ecomplish.user_service.model.UserResponseDTO;
-import com.ecomplish.user_service.service.UserService;
+import com.ecomplish.user_service.model.DTO.*;
+import com.ecomplish.user_service.service.IUserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 
-import static org.mockito.ArgumentMatchers.any;
+import java.io.IOException;
+import java.net.URISyntaxException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
 public class UserControllerTest {
 
-    private MockMvc mockMvc;
+    @Mock
+    private IUserService userService;
 
-    private final UserController userController;
-
-    public UserControllerTest() {
-        CognitoIdentityProviderClient cognitoClient = Mockito.mock(CognitoIdentityProviderClient.class);
-        UserService userService = Mockito.mock(UserService.class);
-        userService.cognitoClient = cognitoClient;
-        userService.USER_POOL_ID = "eu-central-1_123";
-        userService.CLIENT_ID = "AAAAAAA";
-        userService.HOSTED_UI_BASE_URL = "https://<DOMAIN>.auth.test.example.com";
-
-        this.userController = new UserController();
-        this.userController.userService = userService;
-    }
+    @InjectMocks
+    private UserController userController;
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
-        mockMvc = MockMvcBuilders.standaloneSetup(userController).build();
+        MockitoAnnotations.initMocks(this);
     }
 
     @Test
-    public void testLoginURL() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get("/loginURL"))
-                .andExpect(status().isOk())
-                .andReturn();
+    public void testLoginURL() throws URISyntaxException {
+        when(userService.getLoginURL()).thenReturn("mockLoginURL");
+        assertEquals("mockLoginURL", userController.loginURL());
     }
 
     @Test
-    public void testSignupURL() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get("/signupURL"))
-                .andExpect(status().isOk())
-                .andReturn();
+    public void testSignupURL() throws URISyntaxException {
+        when(userService.getSignupURL()).thenReturn("mockSignupURL");
+        assertEquals("mockSignupURL", userController.signupURL());
     }
 
     @Test
-    public void testLogoutURL() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get("/logoutURL"))
-                .andExpect(status().isOk())
-                .andReturn();
+    public void testLogoutURL() throws URISyntaxException {
+        when(userService.getLogoutURL()).thenReturn("mockLogoutURL");
+        assertEquals("mockLogoutURL", userController.logoutURL());
     }
 
     @Test
-    public void testUpdateUser() throws Exception {
-        when(this.userController.userService.updateUser(any(UpdateUserDTO.class))).thenReturn(true);
-        mockMvc.perform(MockMvcRequestBuilders.post("/updateUser")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
-                .andExpect(status().isOk());
+    public void testSession() throws URISyntaxException, IOException, InterruptedException {
+        String authorizationCode = "testAuthorizationCode";
+        UserSessionResponseDTO expectedResponse = new UserSessionResponseDTO();
+        when(userService.getSession(authorizationCode)).thenReturn(expectedResponse);
+        assertEquals(expectedResponse, userController.session(authorizationCode));
     }
 
     @Test
-    public void testChangePassword() throws Exception {
-        when(this.userController.userService.changePassword(any(ChangePasswordDTO.class))).thenReturn(true);
-        mockMvc.perform(MockMvcRequestBuilders.post("/changePassword")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
-                .andExpect(status().isOk());
+    public void testUpdateUser() {
+        UpdateUserDTO updateUserDTO = new UpdateUserDTO();
+        when(userService.updateUser(updateUserDTO)).thenReturn(true);
+        assertEquals(true, userController.updateUser(updateUserDTO));
     }
 
     @Test
-    public void testDeleteUser() throws Exception {
-        when(this.userController.userService.deleteUser("username")).thenReturn(true);
-        mockMvc.perform(MockMvcRequestBuilders.post("/deleteUser")
-                        .param("username", "username"))
-                .andExpect(status().isOk());
+    public void testChangePassword() {
+        ChangePasswordDTO changePasswordDTO = new ChangePasswordDTO();
+        when(userService.changePassword(changePasswordDTO)).thenReturn(true);
+        assertEquals(true, userController.changePassword(changePasswordDTO));
     }
 
     @Test
-    public void testVerifyAccessToken() throws Exception {
-        when(this.userController.userService.verifyAccessToken("accessToken")).thenReturn(true);
-        mockMvc.perform(MockMvcRequestBuilders.get("/verifyAccessToken")
-                        .param("accessToken", "accessToken"))
-                .andExpect(status().isOk());
+    public void testDeleteUser() {
+        String accessToken = "testAccessToken";
+        when(userService.deleteUser(accessToken)).thenReturn(true);
+        assertEquals(true, userController.deleteUser(accessToken));
     }
 
     @Test
-    public void testUser() throws Exception {
-        when(this.userController.userService.user("accessToken")).thenReturn(new UserResponseDTO(
-            "testuser1",
-            "test@example.com",
-            "name",
-            "+123456"
-        ));
-        mockMvc.perform(MockMvcRequestBuilders.get("/user")
-                        .param("accessToken", "accessToken"))
-                .andExpect(status().isOk());
+    public void testVerifyAccessToken() {
+        String accessToken = "testAccessToken";
+        when(userService.verifyAccessToken(accessToken)).thenReturn(true);
+        assertEquals(true, userController.verifyAccessToken(accessToken));
     }
 
     @Test
-    public void testUserId() throws Exception {
-        when(this.userController.userService.userId("accessToken")).thenReturn("userId");
-        mockMvc.perform(MockMvcRequestBuilders.get("/userId")
-                        .param("accessToken", "accessToken"))
-                .andExpect(status().isOk());
+    public void testRefreshAccessToken() {
+        String refreshToken = "testRefreshToken";
+        UserSessionResponseDTO expectedResponse = new UserSessionResponseDTO();
+        when(userService.refreshAccessToken(refreshToken)).thenReturn(expectedResponse);
+        assertEquals(expectedResponse, userController.refreshAccessToken(refreshToken));
     }
 
     @Test
-    public void testGetAccessToken() throws Exception {
-        when(this.userController.userService.getAccessToken(any(AccessTokenDTO.class))).thenReturn("accessToken");
-        mockMvc.perform(MockMvcRequestBuilders.post("/getAccessToken")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
-                .andExpect(status().isOk());
+    public void testUser() {
+        String accessToken = "testAccessToken";
+        UserResponseDTO expectedResponse = new UserResponseDTO();
+        when(userService.getUser(accessToken)).thenReturn(expectedResponse);
+        assertEquals(expectedResponse, userController.user(accessToken));
     }
 
+    @Test
+    public void testUserId() {
+        String accessToken = "testAccessToken";
+        String expectedResponse = "testUserId";
+        when(userService.getUserId(accessToken)).thenReturn(expectedResponse);
+        assertEquals(expectedResponse, userController.userId(accessToken));
+    }
 }
