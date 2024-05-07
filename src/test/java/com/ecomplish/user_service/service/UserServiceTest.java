@@ -56,7 +56,7 @@ public class UserServiceTest {
         DescribeUserPoolClientResponse describeUserPoolClientResponse = Mockito
                 .mock(DescribeUserPoolClientResponse.class);
         UserPoolClientType userPoolClientType = Mockito.mock(UserPoolClientType.class);
-        Mockito.when(userPoolClientType.callbackURLs()).thenReturn(List.of("http://localhost:8000"));
+        Mockito.when(userPoolClientType.callbackURLs()).thenReturn(List.of("http://localhost/api"));
         Mockito.when(describeUserPoolClientResponse.userPoolClient()).thenReturn(userPoolClientType);
         Mockito.when(userService.cognitoClient.describeUserPoolClient((DescribeUserPoolClientRequest) any()))
                 .thenReturn(describeUserPoolClientResponse);
@@ -120,7 +120,7 @@ public class UserServiceTest {
         DescribeUserPoolClientResponse describeUserPoolClientResponse = Mockito
                 .mock(DescribeUserPoolClientResponse.class);
         UserPoolClientType userPoolClientType = Mockito.mock(UserPoolClientType.class);
-        Mockito.when(userPoolClientType.callbackURLs()).thenReturn(List.of("http://localhost:8000"));
+        Mockito.when(userPoolClientType.callbackURLs()).thenReturn(List.of("http://localhost/api"));
         Mockito.when(describeUserPoolClientResponse.userPoolClient()).thenReturn(userPoolClientType);
         Mockito.when(userService.cognitoClient.describeUserPoolClient((DescribeUserPoolClientRequest) any()))
                 .thenReturn(describeUserPoolClientResponse);
@@ -181,8 +181,8 @@ public class UserServiceTest {
                 .mock(DescribeUserPoolClientResponse.class);
         UserPoolClientType userPoolClientType = Mockito.mock(UserPoolClientType.class);
         Mockito.when(userPoolClientType.hasLogoutURLs()).thenReturn(true);
-        Mockito.when(userPoolClientType.logoutURLs()).thenReturn(List.of("http://localhost:8000"));
-        Mockito.when(userPoolClientType.callbackURLs()).thenReturn(List.of("http://localhost:8000"));
+        Mockito.when(userPoolClientType.logoutURLs()).thenReturn(List.of("http://localhost/api"));
+        Mockito.when(userPoolClientType.callbackURLs()).thenReturn(List.of("http://localhost/api"));
         Mockito.when(describeUserPoolClientResponse.userPoolClient()).thenReturn(userPoolClientType);
         Mockito.when(userService.cognitoClient.describeUserPoolClient((DescribeUserPoolClientRequest) any()))
                 .thenReturn(describeUserPoolClientResponse);
@@ -243,8 +243,8 @@ public class UserServiceTest {
                 .mock(DescribeUserPoolClientResponse.class);
         UserPoolClientType userPoolClientType = Mockito.mock(UserPoolClientType.class);
         Mockito.when(userPoolClientType.hasLogoutURLs()).thenReturn(true);
-        Mockito.when(userPoolClientType.logoutURLs()).thenReturn(List.of("http://localhost:8000"));
-        Mockito.when(userPoolClientType.callbackURLs()).thenReturn(List.of("http://localhost:8000"));
+        Mockito.when(userPoolClientType.logoutURLs()).thenReturn(List.of("http://localhost/api"));
+        Mockito.when(userPoolClientType.callbackURLs()).thenReturn(List.of("http://localhost/api"));
         Mockito.when(describeUserPoolClientResponse.userPoolClient()).thenReturn(userPoolClientType);
         Mockito.when(userService.cognitoClient.describeUserPoolClient((DescribeUserPoolClientRequest) any()))
                 .thenReturn(describeUserPoolClientResponse);

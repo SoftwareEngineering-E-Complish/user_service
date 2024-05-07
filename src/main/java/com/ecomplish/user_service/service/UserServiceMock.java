@@ -74,9 +74,9 @@ public class UserServiceMock implements IUserService {
     private Map<String, String> getURIParams(AuthType authType) {
         Map<String, String> uris = new HashMap<>();
         if (authType == AuthType.LOGOUT) {
-            uris.put("logout_uri", "http://localhost:8000/callback");
+            uris.put("logout_uri", "http://localhost/api/callback");
         }
-        uris.put("redirect_uri", "http://localhost:8000/callback");
+        uris.put("redirect_uri", "http://localhost/api/callback");
 
         return uris;
     }
